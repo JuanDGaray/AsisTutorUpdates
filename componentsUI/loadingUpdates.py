@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QHBoxLayout
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QMovie
 from componentsUI import loggin, home
+from  src import loadUpdates
 sys.path.append('../utils/stylesheetUI.py')
 
 from utils import stylesheetUI
@@ -13,10 +14,15 @@ class WorkerThread(QThread):
     finished = pyqtSignal()
 
     def run(self):
-        task = ["Checking for updates...(1/3)", "Updating drivers...(2/3)", "Opening drivers...(3/3)"]
-        for i in task:
-            self.update_text_signal.emit(i)
-            time.sleep(1.5)
+        taskStr = ["Checking for updates...(1/3)", "Updating drivers...(2/3)", "Opening drivers...(3/3)"]
+
+        for i in range(3):
+            self.update_text_signal.emit(taskStr[i])
+            if i == 0:
+                loadUpdates.UpdateApp()
+            if i == 1:
+                print("entró")
+                loadUpdates.UpdateDriver()
         self.finished.emit()
 
 class LoadingScreen(QWidget):
