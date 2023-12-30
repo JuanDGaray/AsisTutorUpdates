@@ -1,10 +1,11 @@
 from setuptools import setup
+from __version__ import __version__
 
-VERSION = '2.0.0'
+
 
 setup(
     name='AsisTutor',
-    version=VERSION,
+    version=__version__,
     description='N/A',
     author='Juan David Garay',
     author_email='j.garay@kodland.team',
