@@ -21,7 +21,6 @@ class WorkerThread(QThread):
             if i == 0:
                 loadUpdates.UpdateApp()
             if i == 1:
-                print("entró")
                 loadUpdates.UpdateDriver()
         self.finished.emit()
 
@@ -44,6 +43,8 @@ class LoadingScreen(QWidget):
         self.progressBar.setFixedWidth(400)
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
+        self.progressBar.setObjectName("Progressbar")
+
         layout.addWidget(self.label)
         layout.addWidget(self.progressBar)
         layout.setAlignment(Qt.AlignCenter)
@@ -59,7 +60,7 @@ class LoadingScreen(QWidget):
 
     def finish_task(self):
         self.MainWindow.resize(900, 500)
-        loggin.Loggin(self.MainWindow)
+        loggin.Loggin(self.MainWindow, error=False)
 
     def update_text(self, text):
         self.label.setText(text)

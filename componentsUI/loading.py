@@ -1,29 +1,42 @@
-import time, sys
-from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QHBoxLayout, QPushButton, QLabel, QVBoxLayout, QWidget, QStackedWidget, QDialog
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QMovie
-from componentsUI import loggin, home, topWindow
-sys.path.append('../utils/stylesheetUI.py')
+import time
+import sys
+from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
+from componentsUI import topWindow, home, loggin, savePassAndUser
+from src.selenuimManager import SelenuimThreadLoggin
+import functools
 
-from utils import stylesheetUI
+processLoading = None
+userText = None
+passText = None
 
 
-class WorkerThread(QThread):
+
+class updateTextExternalSignal(QObject):
     update_text_signal = pyqtSignal(str)
-    finished = pyqtSignal()
+    finished = pyqtSignal(bool, str)
+    switchToLoggin = pyqtSignal()
+    
+    
+    
+    def update_progress(self, value, text):
+        self.update_progress_signal.emit(value, text)
 
-    def run(self):
-        # Simula una tarea que lleva tiempo
-        for i in range(1, 101):
-            time.sleep(0.05)  # Simular una tarea más larga
-            self.update_text_signal.emit(f"Progreso: {i}%")
-
+    def exitTextExternalSignal(self):
         self.finished.emit()
 
+    def stopByException(self, exception, text):
+        self.finished.emit(exception, text)
+
 class LoadingScreen(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, process, passw, user, check = False):
+        global processLoading, passText, userText
         super().__init__()
         self.MainWindow = parent
+        processLoading = process
+        passText = passw
+        userText = user
+        self.checkBool = check
         self.setObjectName("centralwidget")
 
         self.verticalLayoutMain = QVBoxLayout(self)
@@ -31,7 +44,7 @@ class LoadingScreen(QWidget):
         self.verticalLayoutMain.setSpacing(0)
         self.verticalLayoutMain.setObjectName("verticalLayout")
 
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout()
 
         insTop = topWindow.TopWidget()
         insTop.CreateTopWidgetTitle(self.verticalLayoutMain, self.MainWindow)
@@ -40,27 +53,46 @@ class LoadingScreen(QWidget):
         self.progressBar.setAlignment(Qt.AlignCenter)
         self.progressBar.setRange(0, 0)
         self.progressBar.setFixedWidth(500)
+        self.progressBar.setObjectName("Progressbar")
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label)
-        layout.addWidget(self.progressBar)
-        layout.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.progressBar)
+        self.layout.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayoutMain.addLayout(layout)
-        self.startTask()
+        self.verticalLayoutMain.addLayout(self.layout)
+       
+        self.selenium_thread = SelenuimThreadLoggin()
+        self.selenium_thread.finished_signal.connect(
+            lambda exception, text, : self.finish_task(
+                exception, text))
+        self.selenium_thread.update_text_signal.connect(self.update_text)
 
-    def startTask(self):
-        self.worker_thread = WorkerThread()
-        self.worker_thread.finished.connect(self.finish_task)
-        self.worker_thread.update_text_signal.connect(self.update_text)
-        self.worker_thread.start()
 
-    def finish_task(self):
-        home.Inithome(self.MainWindow)
+        if process == "loggin":
+            self.start_selenium(userText, passText, True)
+
+    def start_selenium(self, UserName, UserPass, NewLogin):
+
+        self.selenium_thread.set_credentials(UserName, UserPass, NewLogin)
+        self.selenium_thread.start()
+
+    def switchToLoggin(self, errorText):
+        loggin.Loggin(self.MainWindow, error=errorText)
+
+    def finish_task(self, exception, text):
+        if  processLoading == "loggin":
+            if exception:
+                if len(text)==0:
+                    self.switchToLoggin(errorText = "bad_credential")
+                else:
+                    self.progressBar.deleteLater()
+                    self.label.setText(text)    
+            else:
+                home.Inithome(self.MainWindow)
+                if self.checkBool:
+                    savePassAndUser.showDialog(self.MainWindow)
+
 
     def update_text(self, text):
         self.label.setText(text)
-
-
-        
-        

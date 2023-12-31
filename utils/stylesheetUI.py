@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QFont
 
-black = True
+black = False
 
 #fonts
 fontInput = QFont('Montserrat', 10, 10)
@@ -83,7 +83,11 @@ strStyleSheetsBlack = f"""
     #colaborateButton{{
     background-color: rgb(92,107,192);
     }}
-    
+
+    #labelError{{
+    color:red;
+    }}
+
     #InfoContainer, #logginContainer{{
     background-color:{StrBackground1};
     border-radius: 8px;
@@ -419,6 +423,10 @@ strStyleSheetsLight = f"""
         background-color: {StrBackground5Light};
     }}
 
+    #labelError{{
+    color:red;
+    }}
+
     #Group{{
         background-color:   {StrBackground3Light};
         padding: 8px;
@@ -621,6 +629,15 @@ strStyleSheetsLight = f"""
     background-color:{StrBackground3Light}; 
     border-radius: 8px;
    }}
+#Progressbar{{
+background-color: {StrBackground4Light};
+
+border: 0.5px solid {StrBackground1Light}; 
+}}
+
+#Progressbar::chunk {{
+background-color: {StrBackground7Light};
+}}
 
 
 #ButtonWindowTheme{{

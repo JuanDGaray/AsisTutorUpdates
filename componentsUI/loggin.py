@@ -1,23 +1,27 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os, time
 import sys
+import threading as th
 sys.path.append('../utils/stylesheetUI.py')
 
 
 from utils import stylesheetUI
 from componentsUI import loading, topWindow
+from src import selenuimManager
 
 UserIsLogged = False
 UserInput = None
 
 #Instancias
-
 class Loggin(QtWidgets.QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, error):
         super().__init__(parent)
-        self.WindowLoggin(parent)
+        self.WindowLoggin(parent, error)
+        self.label = QtWidgets.QLabel(self.logginContainer)
+        self.label.setObjectName("label")
+        self.verticalLayout_2.addWidget(self.label)
 
-    def WindowLoggin(self, parent):      
+    def WindowLoggin(self, parent, error):      
         self.MainWindow = parent 
         #CentralWidget
         self.setObjectName("centralwidget")
@@ -206,7 +210,7 @@ class Loggin(QtWidgets.QWidget):
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.logginContainer = QtWidgets.QFrame(self.groupBox)
-        self.logginContainer.setMaximumSize(QtCore.QSize(300, 100))
+        self.logginContainer.setMaximumSize(QtCore.QSize(400, 100))
         self.logginContainer.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.logginContainer.setFrameShadow(QtWidgets.QFrame.Raised)
         self.logginContainer.setObjectName("logginContainer")
@@ -244,11 +248,18 @@ class Loggin(QtWidgets.QWidget):
         self.checkboxLayout.setAlignment(QtCore.Qt.AlignCenter)
         self.checkbox.setObjectName("Remember")
         
+
+        
         self.verticalLayout_4.addWidget(self.logginPush)
         self.verticalLayout_5.addLayout(self.checkboxLayout)
         self.verticalLayout_5.addWidget(self.logginButton)
+        self.labeError = QtWidgets.QLabel()
+        if error == "bad_credential": 
+            self.labeError.setObjectName("labelError")
+            self.labeError.setText("Password or user bad!\nTry again")
+            self.verticalLayout_4.addWidget(self.labeError)
         
-        self.logginPush.clicked.connect(lambda: self.switchtoLoading())
+        self.logginPush.clicked.connect(lambda: self.switchtoLoading(user=self.lineEdit.text(), passw=self.lineEdit_2.text()))
 
         #INFO APP CONTAINER
         self.horizontalLayout_4.addWidget(self.groupBox, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
@@ -293,12 +304,28 @@ class Loggin(QtWidgets.QWidget):
                                                 "</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">"
                                                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Tutor Assistant is a web scraping-based program designed to efficiently scan tutor data and facilitate the organization and management of student information.</p></body></html>"))
             self.label_5.setText(_translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/tutoring.png\"/></p></body></html>"))
+    def update_text(self, text):
+        self.label.setText(text)
 
-    def switchtoLoading(self):
-        self.loading = loading.LoadingScreen(self.MainWindow)
-        self.MainWindow.setCentralWidget(self.loading)
-        self.loading.show()
+    def switchtoLoading(self, passw=None, user=None):
+            if  len(passw) > 0 and len(user)>0:
+                if self.checkbox.isChecked():
+                     checkBox = True
+                else:
+                     checkBox = False
+                self.loading = loading.LoadingScreen(self.MainWindow, "loggin", passw= passw, user=user, check=checkBox)
+                self.MainWindow.setCentralWidget(self.loading)
+                self.loading.show()
+            else:
+                self.labeError.setObjectName("labelError")
+                self.labeError.setText("Write your password or user")
+                self.verticalLayout_4.addWidget(self.labeError)
+                 
 
+        
+
+
+        
 
 
 
