@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 from utils import stylesheetUI
-Theme = "Dark"
+Theme = "Light"
 
 class TopWidget():
       

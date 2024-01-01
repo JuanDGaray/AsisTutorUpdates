@@ -2,8 +2,9 @@ import time
 import sys
 from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
-from componentsUI import topWindow, home, loggin, savePassAndUser
+from componentsUI import topWindow, home, loggin
 from src.selenuimManager import SelenuimThreadLoggin
+from src.dataBaseManager import db_manager
 import functools
 
 processLoading = None
@@ -91,7 +92,8 @@ class LoadingScreen(QWidget):
             else:
                 home.Inithome(self.MainWindow)
                 if self.checkBool:
-                    savePassAndUser.showDialog(self.MainWindow)
+                    db_manager().save_credential(userText, passText)
+                    
 
 
     def update_text(self, text):

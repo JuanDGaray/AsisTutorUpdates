@@ -8,6 +8,7 @@ sys.path.append('../utils/stylesheetUI.py')
 from utils import stylesheetUI
 from componentsUI import loading, topWindow
 from src import selenuimManager
+from src.dataBaseManager import db_manager
 
 UserIsLogged = False
 UserInput = None
@@ -207,6 +208,7 @@ class Loggin(QtWidgets.QWidget):
         self.groupBox.setObjectName("groupBox")
 
         #LOGGIN CONTAINER
+        userAndPassInLocalMemory = db_manager().findPassAndUserCache()
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.logginContainer = QtWidgets.QFrame(self.groupBox)
@@ -230,6 +232,9 @@ class Loggin(QtWidgets.QWidget):
         self.lineEdit_2 = QtWidgets.QLineEdit(self.logginContainer)
         self.lineEdit_2.setMaximumSize(QtCore.QSize(16777215, 20))
         self.lineEdit_2.setObjectName("lineEdit_2")
+        if userAndPassInLocalMemory != None:
+            self.lineEdit.setText(userAndPassInLocalMemory[1])
+            self.lineEdit_2.setText(userAndPassInLocalMemory[2])
         self.verticalLayout_2.addWidget(self.lineEdit_2)
         self.verticalLayout_5.addWidget(self.logginContainer, 0, QtCore.Qt.AlignVCenter)
         self.logginButton = QtWidgets.QFrame(self.groupBox)

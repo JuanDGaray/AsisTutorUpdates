@@ -1,5 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QThread, pyqtSignal
 from componentsUI import topWindow
+from src.dataBaseManager import db_manager
+from src.selenuimManager import seleniumTakeMetricsByGroupBasic
 from utils import stylesheetUI
 import webbrowser
 
@@ -8,17 +11,33 @@ colSpam = 0
 
 initTW = topWindow.TopWidget()
 
+
+
 class Inithome(QtWidgets.QWidget):
 
-    
+    class DonutThread(QThread):
+        finished = pyqtSignal()
+
+        def run(self):
+            print("DonutThread is running...")
+            self.parent().putMetricDonut()
+            print("DonutThread is finished.")
+            self.finished.emit()
+
     def __init__(self, parent):
         super().__init__(parent)
         self.WindowHome(parent)
         self.homeSize = "Min"
         self.WindowMain = parent
+        self.donut_thread = self.DonutThread(parent=self)
+        self.donut_thread.finished.connect(self.onDonutThreadFinished)
+        self.donut_thread.start()
+
         
         
-        
+    def onDonutThreadFinished(self):
+        self.putMetricDonut()
+
     def retranslateUi(self, parent):
         self._translate = QtCore.QCoreApplication.translate
         parent.setWindowTitle(self._translate("MainWindow", "MainWindow"))
@@ -43,6 +62,7 @@ class Inithome(QtWidgets.QWidget):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.verticalLayoutMain.addLayout(self.horizontalLayout)
         self.body = QtWidgets.QWidget(self)
+        self.sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -266,12 +286,6 @@ class Inithome(QtWidgets.QWidget):
             self.verticalLayoutSidebar.addWidget(contentItemsNews)
 
 
-        def enterEvent(self, event):
-            print("El mouse dentro del QFrame.")
-            
-
-        def leaveEvent(self, event):
-            print("El mouse ha salido del QFrame.")
     
         self.retranslateUi(parent)
         QtCore.QMetaObject.connectSlotsByName(parent)
@@ -313,26 +327,27 @@ class Inithome(QtWidgets.QWidget):
                     widget.deleteLater()
 
         if self.width() >=1000:
-            fontSize = 10
+            self.fontSize = 10
             colTarget=5
             spamDonut=4
             
         else: 
-            fontSize = 7
+            self.fontSize = 7
             colTarget=4
             spamDonut=5
 
         spamStatus= 2
         font = QtGui.QFont()
         font.setFamily("DejaVu Sans")
-        font.setPointSize(fontSize)
+        font.setPointSize(self.fontSize)
         _translate = QtCore.QCoreApplication.translate
         self.listMetrics = []
 
         
+        self.n_group_list = db_manager().putGroupAtHome()
 
 
-        for group in range(15):
+        for group in range(len(self.n_group_list)):
             div = (group)//colTarget
             rowW = 0
             colW = group
@@ -341,7 +356,6 @@ class Inithome(QtWidgets.QWidget):
                 colW = group-(div*colTarget)
 
             groupContainer = QtWidgets.QGroupBox()
-            self.listMetrics.append(groupContainer)
 
                 
             groupContainer.setAutoFillBackground(False)
@@ -376,16 +390,16 @@ class Inithome(QtWidgets.QWidget):
             nameGroupText = ClickableLabel()
             nameGroupText.setObjectName("nameGroupText")
             nameGroupText.setOpenExternalLinks(True)
-            nameGroupText.setText("<a href='http://www.ejemplo.com'>CHI999</a>")
+            nameGroupText.setText(f"<a href='https://backoffice.kodland.org/en/group_{self.n_group_list[group][0]}/'>{self.n_group_list[group][1]}</a>")
             nameGroupContainer.addWidget(nameGroupText)
             nameGroupText.link_clicked.connect(self.abrir_archivo)
 
 
             labelStatus = QtWidgets.QLabel()
             labelStatus.setFont(font)
-            labelStatus.setText(_translate("MainWindow","Good"))
+            labelStatus.setText("-")
             labelStatus.setObjectName("labelStatus")
-            labelStatus.setStyleSheet("color: red")
+            labelStatus.setStyleSheet("color: black")
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
             labelStatus.setSizePolicy(sizePolicy)
             labelStatus.setContentsMargins(0,0,0,0)
@@ -415,13 +429,14 @@ class Inithome(QtWidgets.QWidget):
             horizontalLayout_2 = QtWidgets.QHBoxLayout(metricGroup)
             horizontalLayout_2.setObjectName("horizontalLayout_2")
             horizontalLayout_2.setContentsMargins(8,4,8,8)
+
+            
             
 
             LayoutVDonutContainer = QtWidgets.QVBoxLayout()
             LayoutVDonutContainer.setContentsMargins(0,0,0,0)
             LayoutVDonutContainer.setSizeConstraint(0)
-            LayoutVDonutContainer.setSpacing(2)
-        
+            LayoutVDonutContainer.setSpacing(2)        
 
             widget = DonutChartWidget(40,50)
             widget.setObjectName("widget")
@@ -430,7 +445,7 @@ class Inithome(QtWidgets.QWidget):
             LayoutVDonutContainer.addWidget(widget)
     
             
-            ColorPartDonut1 = QtWidgets.QLabel()
+            ColorPartDonut1 = DonutChartWidget(40,60)
             ColorPartDonut1.setObjectName("BoxColorDonut1")
             ColorPartDonut1.setContentsMargins(0,0,0,0)
             ColorPartDonut1.setMaximumHeight(7)
@@ -458,6 +473,7 @@ class Inithome(QtWidgets.QWidget):
 
             LayoutVDonutContainer.addWidget(ColorPartDonut2)
             LayoutVDonutContainer.addWidget(InfoPartDonut2)
+
             spacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
             LayoutVDonutContainer.addItem(spacerItem)
 
@@ -500,7 +516,7 @@ class Inithome(QtWidgets.QWidget):
             columnDescriptionGroupContainer.addWidget(labelCourseName)
 
             LabelCourseNameArg = QtWidgets.QLabel()
-            LabelCourseNameArg.setText(_translate("MainWindow","<a href='http://www.google.com'> Python </a>"))
+            LabelCourseNameArg.setText(_translate("MainWindow",f"<a href='http://www.google.com'> {self.n_group_list[group][3]} </a>"))
             LabelCourseNameArg.linkActivated.connect(self.abrir_archivo)
             LabelCourseNameArg.setAlignment(QtCore.Qt.AlignLeft)
             LabelCourseNameArg.setStyleSheet("color:blue;")
@@ -516,7 +532,7 @@ class Inithome(QtWidgets.QWidget):
             columnDescriptionGroupContainer.addWidget(labelNextClass)
 
             labelNextClassArg = QtWidgets.QLabel()
-            labelNextClassArg.setText(_translate("MainWindow","<a href='http://www.google.com'> M8L1 </a>"))
+            labelNextClassArg.setText(_translate("MainWindow",f"<a href='http://www.google.com'> {self.n_group_list[group][4]} </a>"))
             labelNextClassArg.setFont(font)
             labelNextClassArg.linkActivated.connect(self.abrir_archivo)
             labelNextClassArg.setObjectName("LabelInforGroup")
@@ -530,7 +546,7 @@ class Inithome(QtWidgets.QWidget):
             columnDescriptionGroupContainer.addWidget(labelStudents)
 
             labelStudentsArg = QtWidgets.QLabel()
-            labelStudentsArg.setText(_translate("MainWindow","1/15"))
+            labelStudentsArg.setText(_translate("MainWindow",f"{self.n_group_list[group][2]}"))
             labelStudentsArg.setContentsMargins(0,0,0,0)
             labelStudentsArg.setFont(font)
             labelStudentsArg.setObjectName("LabelInforGroup")
@@ -545,7 +561,7 @@ class Inithome(QtWidgets.QWidget):
             columnDescriptionGroupContainer.addWidget(NextLesson)
 
             NextLessonArg = QtWidgets.QLabel()
-            NextLessonArg.setText(_translate("MainWindow","M8L2"))
+            NextLessonArg.setText(_translate("MainWindow",f"{self.n_group_list[group][6]}"))
             NextLessonArg.setContentsMargins(0,0,0,0)
             NextLessonArg.setFont(font)
             NextLessonArg.setObjectName("LabelInforGroup")
@@ -589,9 +605,47 @@ class Inithome(QtWidgets.QWidget):
 
             self.gridLayout.addWidget(groupContainer, rowW, colW)
             self.gridLayout.setParent(self.scrollContent)
+            self.listMetrics.append([LayoutVDonutContainer, widget, labelStatus])
+
+    def onDonutThreadFinished(self):
+        print("Donut Thread Finished")
+
+    def load_gif(self, path):
+        movie = QtGui.QMovie(path)
+        self.gif.setMovie(movie)
+        movie.start()
+
+
+
+    def putMetricDonut(self):
+        for i in range(len(self.listMetrics)):           
+            n_std = self.n_group_list[i][2].split('/')
+            n_std = int(n_std[0])
+            argList = seleniumTakeMetricsByGroupBasic().findPoints(self.n_group_list[i][0], n_std)
+            self.listMetrics[i][1].update_values(*argList)
+            if argList[1]> 88:
+                self.listMetrics[i][2].setText("Perfect")
+                self.listMetrics[i][2].setStyleSheet("color:blue")
+            elif argList[1]> 70:
+                self.listMetrics[i][2].setText("High")
+                self.listMetrics[i][2].setStyleSheet("color:cyan")
+            elif argList[1]> 60:
+                self.listMetrics[i][2].setText("Good")
+                self.listMetrics[i][2].setStyleSheet("color:green")
+            elif argList[1]> 50:
+                self.listMetrics[i][2].setText("Regular")
+                self.listMetrics[i][2].setStyleSheet("color:yellow")
+            elif argList[1]> 35:
+                self.listMetrics[i][2].setText("Low")
+                self.listMetrics[i][2].setStyleSheet("color:orange")
+            elif argList[1]> 25:
+                self.listMetrics[i][2].setText("Bad")
+                self.listMetrics[i][2].setStyleSheet("color:red")
+            else:
+                self.listMetrics[i][2].setText("Critical")
+                self.listMetrics[i][2].setStyleSheet("color:brown")
 
     def abrir_archivo(self, enlace):
-        # Utilizar QDesktopServices para abrir el archivo con el programa predeterminado
         webbrowser.open(enlace)
               
 
@@ -848,25 +902,31 @@ class DonutChartWidget(QtWidgets.QWidget):
     def __init__(self, value1, value2, *args):
         super().__init__()
         self.values = [value1, value2]
-
-        if args:
-            self.values.extend(args)
-
-    def paintEvent(self, event):
-        # Valores para el gráfico de dona
-        total = sum(self.values)
         if initTW.ReturnTheme() == "Dark":
             self.backgroundDonut =  [39, 40, 34]
             self.negativeColor =    [136, 216, 41]
             self.positiveColor =    [204, 86, 33]
-            print("leo")
         else :
             self.backgroundDonut =  [255, 255, 255]
             self.negativeColor =    [136, 216, 41]
             self.positiveColor =    [204, 86, 33]
-            print("prado")
 
-        # Configuración del widget
+        if args:
+            self.values.extend(args)
+
+    def update_values(self, value1, value2, *args):
+        self.values = [value1, value2]
+        if sum(self.values) <1:
+            self.values = [100,0]
+            self.negativeColor = [110, 105, 104]
+            self.positiveColor = [110, 105, 104]
+        if args:
+            self.values.extend(args)
+        self.repaint()
+
+
+    def paintEvent(self, event):
+        total = sum(self.values)
         widget_width = self.width()
         widget_height = self.height()
         center_x = widget_width // 2
@@ -874,34 +934,33 @@ class DonutChartWidget(QtWidgets.QWidget):
         radius = int(min(center_x, center_y) * 0.8)
         hole_radius = int(radius * 0.5)
 
-        # Inicializar un objeto QPainter para dibujar en el widget
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        # Dibujar el gráfico de dona
         start_angle = 0
-        for value in self.values:
-            angle = int(value / total * 360)
-            if self.values.index(value) == 0:
-                painter.setBrush(QtGui.QColor(*self.positiveColor))
-                print("postive")
-            elif self.values.index(value) == 1:
-                painter.setBrush(QtGui.QColor(*self.negativeColor))
-                print("negative")
 
-            # Añadir un borde al gráfico de dona
-            pen = QtGui.QPen()
-            pen.setColor(QtGui.QColor(*self.backgroundDonut))
-            pen.setWidth(1)
-            painter.setPen(pen)
+        positive_brush = QtGui.QBrush(QtGui.QColor(*self.positiveColor))
+        negative_brush = QtGui.QBrush(QtGui.QColor(*self.negativeColor))
+        background_pen = QtGui.QPen(QtGui.QColor(*self.backgroundDonut))
+        background_pen.setWidth(1)
+
+        for i, value in enumerate(self.values):
+            angle = int(value / total * 360)
+
+            if i == 0:
+                painter.setBrush(positive_brush)
+            elif i == 1:
+                painter.setBrush(negative_brush)
+
+            painter.setPen(background_pen)
 
             painter.drawPie(center_x - radius, center_y - radius, radius * 2, radius * 2, start_angle * 16, angle * 16)
             start_angle += angle
 
-        # Dibujar el agujero en el centro
-        
         painter.setBrush(QtGui.QColor(*self.backgroundDonut))
         painter.drawEllipse(center_x - hole_radius, center_y - hole_radius, hole_radius * 2, hole_radius * 2)
+
+        painter.end()
 
 class ClickableLabel(QtWidgets.QLabel):
     link_clicked = QtCore.pyqtSignal(QtCore.QUrl)

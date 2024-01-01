@@ -11,12 +11,10 @@ setup(
     author_email='j.garay@kodland.team',
     packages=['mi_app'],
     install_requires=[
-        # Lista de dependencias si las tienes
     ],
     entry_points={
         'console_scripts': [
             'mi_app = __main__:main',
         ],
     },
-    # Otros metadatos...
 )

@@ -11,7 +11,7 @@ options.add_argument("disable-gpu")
 
 class UpdateApp():
     def __init__(self):
-        versionThisApp = '1.0.0'  # Reemplaza con la versión actual de tu aplicación
+        versionThisApp = __version__
 
         lastVersion = self.takeLastVersion('JuanDGaray', 'AsisTutor2.0')
 
@@ -31,12 +31,10 @@ class UpdateApp():
         return None
 
     def compareVersions(self, version_actual, version_nueva):
-        # Implementa la lógica de comparación de versiones según tus necesidades
         return version_actual != version_nueva
 
     def UpdateApp(self):
-        # Implementa la lógica para descargar y aplicar la actualización
-        subprocess.run(['git', 'pull'])  # Por ejemplo, podrías usar git para actualizar
+        subprocess.run(['git', 'pull']) 
 
 
 class UpdateDriver(): 
@@ -47,9 +45,7 @@ class UpdateDriver():
             chrome_driver_version = driver.capabilities['chrome']['chromedriverVersion']
             print("Versión del ChromeDriver:", chrome_driver_version)
         except Exception as e:
-            # Captura cualquier excepción e imprime los detalles
             print("Ocurrió un error:", str(e))
-            # También puedes imprimir detalles adicionales si es necesario, por ejemplo, la traza de la pila
             import traceback
             traceback.print_exc()
 

@@ -18,9 +18,6 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.loading)
         self.loading.show()
 
-        
-
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

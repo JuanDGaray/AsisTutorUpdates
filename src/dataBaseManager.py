@@ -16,7 +16,7 @@ class db_manager():
         self.bsd.close()
 
     def saveDB(self):
-        return self.bsd.commit()
+        self.bsd.commit()
 
     def deleteTableGroups(self):
         self.cursor.execute('DELETE FROM db_groups;')
@@ -24,10 +24,39 @@ class db_manager():
     def addValueTableGroup(self, row):
         self.cursor.executescript(f"INSERT INTO db_groups VALUES ({(row)})")
 
-    def save_credential(self):
+    def save_credential(self, user, password):
+        nUserMemory = self.findPassAndUserCache()
         self.openDB()
-        self.cursor.execute(f"UPDATE Join_Data SET User = '{self.user}', Password = '{self.password}' WHERE  ID = '1'" )
+        print(user, password)
+        if nUserMemory != None:
+            self.cursor.execute('DELETE FROM Join_Data;')
+        self.cursor.execute("INSERT INTO Join_Data (ID, User, Password) VALUES (?, ?, ?)", (1, user, password))
         self.saveDB()
-        return self.closeDB()
+        print("lo guardé")
+        self.closeDB()
+    
+    def findPassAndUserCache(self):
+        self.openDB()
+        reviewValues = "SELECT COUNT(*) FROM Join_Data WHERE user IS NOT NULL"
+        self.cursor.execute(reviewValues)
+        result = self.cursor.fetchone()[0]
+        if result > 0:
+            resultUser = self.cursor.execute("SELECT User FROM Join_Data LIMIT 1").fetchone()
+            user = resultUser[0]
+            resultPass = self.cursor.execute("SELECT Password FROM Join_Data LIMIT 1").fetchone()
+            passw = resultPass[0]
+            self.closeDB()
+            return [True, user, passw]
+        
+    def putGroupAtHome(self):
+        self.openDB()
+        self.cursor.execute("SELECT * FROM db_groups")
+        list_group = self.cursor.fetchall()
+        self.closeDB
+        return list_group
+
+
+    
+
     
  
