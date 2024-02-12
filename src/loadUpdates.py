@@ -27,7 +27,7 @@ class UpdateApp():
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            return data.get('tag_name')
+            return data.get('name')
         return None
 
     def compareVersions(self, version_actual, version_nueva):
@@ -38,7 +38,7 @@ class UpdateApp():
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
         print(result.stdout)
         print(result.stderr)
-        subprocess.run(['python', 'main.py'])
+        subprocess.run(['python', '__main__.py'])
         
 
 
