@@ -35,7 +35,9 @@ class UpdateApp():
 
     def UpdateApp(self):
         subprocess.run(['git', 'branch', '--set-upstream-to=origin/master', 'master'])
-        subprocess.run(['git', 'pull']) 
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
+        print(result.stdout)
+        print(result.stderr)
 
 
 class UpdateDriver(): 
