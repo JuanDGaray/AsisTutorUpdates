@@ -3,6 +3,11 @@ venv/
 
 # Compiled Python files
 __pycache__/
+Asis2.0/
+*.egg-info/
+*.egg-info.tar.gz
+*.pyc
+__pycache__/
 
 # Python cache
 *.pyc

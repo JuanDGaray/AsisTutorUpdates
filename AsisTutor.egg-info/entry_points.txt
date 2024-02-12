@@ -1,3 +1,0 @@
-[console_scripts]
-mi_app = __main__:main
-
