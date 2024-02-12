@@ -38,6 +38,8 @@ class UpdateApp():
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
         print(result.stdout)
         print(result.stderr)
+        subprocess.run(['python', 'main.py'])
+        
 
 
 class UpdateDriver(): 
