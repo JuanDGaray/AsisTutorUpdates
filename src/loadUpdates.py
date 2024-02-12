@@ -12,9 +12,9 @@ options.add_argument("disable-gpu")
 class UpdateApp():
     def __init__(self):
         versionThisApp = __version__
-
+        print("Version app:", versionThisApp)
         lastVersion = self.takeLastVersion('JuanDGaray', 'AsisTutor2.0')
-
+        print("Version repo:", lastVersion)
         if lastVersion and self.compareVersions(versionThisApp, lastVersion):
             print(f"¡Hay una nueva versión disponible: {lastVersion}!")
             self.UpdateApp()
@@ -34,6 +34,7 @@ class UpdateApp():
         return version_actual != version_nueva
 
     def UpdateApp(self):
+        subprocess.run(['git', 'branch', '--set-upstream-to=origin/master', 'master'])
         subprocess.run(['git', 'pull']) 
 
 
