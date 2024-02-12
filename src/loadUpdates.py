@@ -1,5 +1,5 @@
 from selenium import webdriver
-import requests
+import requests, sys, os
 import subprocess
 import chromedriver_autoinstaller
 from __version__ import __version__
@@ -8,6 +8,12 @@ driver = None
 options = webdriver.ChromeOptions()
 options.add_argument('headless')
 options.add_argument("disable-gpu")
+
+def reiniciar_programa():
+    print("Se activo")
+    subprocess.run([sys.executable] + sys.argv)
+    sys.exit()
+
 
 class UpdateApp():
     def __init__(self):
@@ -36,9 +42,8 @@ class UpdateApp():
     def UpdateApp(self):
         subprocess.run(['git', 'branch', '--set-upstream-to=origin/master', 'master'])
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
-        print(result.stdout)
-        print(result.stderr)
-        subprocess.run(['python', '__main__.py'])
+        reiniciar_programa()
+
         
 
 

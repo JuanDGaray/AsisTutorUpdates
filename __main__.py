@@ -1,13 +1,6 @@
 import sys
-import os
 from PyQt5 import  QtCore, QtGui, QtWidgets
 from componentsUI import loggin, home, loadingUpdates
-
-
-def reiniciar_programa():
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
-
 from utils import stylesheetUI
 
 window = "loggin"
