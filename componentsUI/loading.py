@@ -64,9 +64,7 @@ class LoadingScreen(QWidget):
         self.verticalLayoutMain.addLayout(self.layout)
        
         self.selenium_thread = SelenuimThreadLoggin()
-        self.selenium_thread.finished_signal.connect(
-            lambda exception, text, : self.finish_task(
-                exception, text))
+        self.selenium_thread.finished_signal.connect(lambda exception, text, : self.finish_task(exception, text))
         self.selenium_thread.update_text_signal.connect(self.update_text)
 
 

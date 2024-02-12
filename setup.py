@@ -1,20 +1,32 @@
-from setuptools import setup
-from __version__ import __version__
+import sys
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget, QFrame, QPushButton, QWidget, QVBoxLayout
 
+# Crea la aplicación
+app = QApplication(sys.argv)
 
+# Crea el widget que quieres mostrar
+widget = QWidget()
 
-setup(
-    name='AsisTutor',
-    version=__version__,
-    description='N/A',
-    author='Juan David Garay',
-    author_email='j.garay@kodland.team',
-    packages=['mi_app'],
-    install_requires=[
-    ],
-    entry_points={
-        'console_scripts': [
-            'mi_app = __main__:main',
-        ],
-    },
-)
+# Crea un QFrame y establece su diseño principal como un QVBoxLayout
+frame = QFrame()
+frameLayout = QVBoxLayout(frame)
+
+# Agrega un botón al diseño del QFrame
+button = QPushButton("Botón")
+frameLayout.addWidget(button)
+
+# Crea una escena gráfica y un visor gráfico
+scene = QGraphicsScene()
+view = QGraphicsView(scene)
+
+# Agrega el QFrame a la escena gráfica como un elemento gráfico
+proxy = QGraphicsProxyWidget(scene)
+proxy.setWidget(frame)
+proxy.setPos(0, 0)
+proxy.setZValue(1)
+
+# Muestra el visor gráfico
+view.show()
+
+# Ejecuta la aplicación
+sys.exit(app.exec_())

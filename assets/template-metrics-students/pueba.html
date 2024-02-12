@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mi gráfico de barras</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <canvas id="myChart"></canvas>
+
+  <script>
+    // Obtén una referencia al elemento canvas
+    var ctx = document.getElementById('myChart').getContext('2d');
+
+    // Define los datos del gráfico
+    var data = {
+      labels: ['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 4'],
+      datasets: [{
+        label: 'Datos de ejemplo',
+        data: [10, 20, 30, 40],
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+      }]
+    };
+
+    // Define las opciones del gráfico
+    var options = {
+      responsive: true,
+      scales: {
+        x: {
+          display: true,
+          grid: {
+            display: false
+          }
+        },
+        y: {
+          display: true,
+          grid: {
+            display: true
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        datalabels: {
+          anchor: 'center',
+          align: 'center',
+          color: 'black',
+          font: {
+            weight: 'bold'
+          },
+          formatter: function(value, context) {
+            var dataset = context.chart.data.datasets[context.datasetIndex];
+            var total = dataset.data.reduce(function(previousValue, currentValue) {
+              return previousValue + currentValue;
+            });
+            var percentage = Math.round((value / total) * 100);
+            return percentage + '%';
+          }
+        }
+      }
+    };
+
+    // Crea el gráfico de barras
+    var myChart = new Chart(ctx, {
+      type: 'bar',
+      data: data,
+      options: options
+    });
+  </script>
+</body>
+</html>

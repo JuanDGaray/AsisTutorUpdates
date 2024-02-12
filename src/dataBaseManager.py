@@ -54,7 +54,28 @@ class db_manager():
         list_group = self.cursor.fetchall()
         self.closeDB
         return list_group
+    
+    def addEngagementToDb(self, id, row):
+        self.openDB()
+        query = f"UPDATE db_groups SET pointsAttend =  ?, pointsNoAttend = ?, isGraduate = ? WHERE id_group = {id}"
+        self.cursor.execute(query, row)
+        self.saveDB()
+        self.closeDB()
+    
+    def addEngagementStatusToDB(self, id, row):
+        self.openDB()
+        query = f"UPDATE db_groups SET engagmentInt = ?, engagmentText = ? WHERE id_group = {id}"
+        self.cursor.execute(query, row)
+        self.saveDB()
+        self.closeDB()
 
+
+    def takeEngagmenttoDb(self):
+        self.openDB()
+        self.cursor.execute("SELECT pointsAttend, pointsNoAttend, isGraduate FROM db_groups")
+        rows = self.cursor.fetchall()
+        self.closeDB()
+        return rows
 
     
 

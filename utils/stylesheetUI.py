@@ -99,6 +99,8 @@ strStyleSheetsBlack = f"""
     border-radius: 8px;
     
     }}
+
+
     
     #logginPush{{
     background-color: rgb(80,100,180);
@@ -135,6 +137,25 @@ strStyleSheetsBlack = f"""
         }}
 
        
+    #labeNameGroup{{
+        color: white;
+        height: 20px;
+        background-color: {StrBackground2};
+        border-radius: 6px;
+        font-weight:bold;
+        font-size: 12px;
+        }}        
+
+    #wcontainerBoxVinfoGroup{{
+        background-color: {StrBackground4};
+        border-radius: 6px;
+    }}
+
+    #labelTitleDescriptionGroup{{
+        background-color: {StrBackground3};
+        font-weight:bold;
+    }}
+    
     #nameGroup{{
         color: white;
         height: 20px;
@@ -173,14 +194,30 @@ strStyleSheetsBlack = f"""
     #ButtonMetrics:hover{{ 
         background-color: {colorDonutPositive};
     }}
-
-    #BoxColorDonut2{{
-        background-color: {colorDonutPositive};
+    #BarBottom{{
+        background-color: {StrBackground5};
     }}
 
-     #BoxColorDonut2{{
-        background-color: {colorDonutNegative};
+    #HomeON{{
+        background-color: {StrBackground1};
+        border-raduis 0px;
+        color: {fontColor}M
     }}
+    #HomeON:hover{{ 
+        background-color: {StrBackground3};
+    }}
+
+    #HomeOFF{{
+        background-color: {StrBackground2};
+        border-raduis 0px;
+        color: {fontColor}
+    }}
+
+    #HomeOFF:hover{{ 
+        background-color: {StrBackground3};
+    }}
+
+
     #ButtonMetrics{{ 
         border-radius: 3px;
         color: white;
@@ -296,11 +333,27 @@ strStyleSheetsBlack = f"""
    margin-top:4px;
    margin-right:2px;
    }}
-
+   #SpiderChart{{
+        background-color: {StrBackground3};
+    }}
    #buttoThemeWidget{{
         background-color:{StrBackground3};
         border-radius: 12px;
    }}
+
+    QScrollBar:vertical {{
+        width: 10px;
+        background-color: {StrBackground3};
+    }}
+
+    QScrollBar::handle:vertical {{
+        background-color: {StrBackground1};
+        border-radius: 5px;
+    }}
+
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+        height: 0px;
+    }}
 
 
 """
@@ -371,6 +424,31 @@ strStyleSheetsLight = f"""
     background-color:rgb(144, 219, 58);
     
     }}
+    #HomeON{{
+        background-color: {StrBackground1Light};
+        border-raduis 0px: 
+        margin: 0px;
+        padding: 0px;
+        color: {fontColorLight};
+    }}
+
+    #HomeON:hover{{ 
+        background-color: {StrBackground3Light};
+    }}
+
+    #HomeOFF{{
+        background-color: {StrBackground2Light};
+        border-raduis 0px: 
+        margin: 0px;
+        padding: 0px;
+        color: {fontColorLight}
+    }}
+
+    #HomeOFF:hover{{ 
+        background-color: {StrBackground3Light};
+    }}
+
+
     
     #colaborateButton{{
     background-color: rgb(92,107,192);
@@ -392,7 +470,24 @@ strStyleSheetsLight = f"""
         font-weight:bold;
         }}
 
-        
+    #labeNameGroup{{
+    height: 20px;
+    background-color: {StrBackground2Light};
+    border-radius: 4px;
+    font-weight:bold;
+    font-size: 12px;
+    }}        
+
+    #containerDescriptionGroup{{
+        background-color: {StrBackground3Light};
+        border-radius: 4px;
+    }}
+
+    #labelTitleDescriptionGroup{{
+        background-color: {StrBackground3Light};
+        font-weight:bold;
+    }}
+
     #Remember::indicator {{ 
             
         border: 2px solid #999; 
@@ -484,7 +579,9 @@ strStyleSheetsLight = f"""
         width:500px
         
         }}
-
+    #SpiderChart{{
+        background-color: green;
+    }}
     #centralwidgetHome{{
     background-color: {StrBackground3Light};
     }} 
@@ -534,6 +631,10 @@ strStyleSheetsLight = f"""
         color: {fontColorLight};
     }}
 
+    #BarBottom{{
+        background-color: {StrBackground5Light};
+    }}
+
     #barBottom::chunk{{
         background-color: red;
         font-size: 5px;
@@ -544,13 +645,6 @@ strStyleSheetsLight = f"""
         background-color: green;
         font-size: 5px;
         border-radius: 4px;
-    }}
-    #BoxColorDonut2{{
-        background-color: {colorDonutPositiveLight};
-    }}
-
-     #BoxColorDonut2{{
-        background-color: {colorDonutNegativeLight};
     }}
     #LabelBar{{
         padding-right: 4px;
@@ -611,7 +705,7 @@ strStyleSheetsLight = f"""
     }}
 
     #infoNews{{
-        color: blue;
+        color: black;
         font-size: 10px;
     }}
 
@@ -653,6 +747,19 @@ background-color: {StrBackground7Light};
         padding: 4px;
    }}
 
+QScrollBar:vertical {{
+    width: 10px;
+    background-color: {StrBackground5Light};
+}}
+
+QScrollBar::handle:vertical {{
+    background-color: {StrBackground4Light};
+    border-radius: 5px;
+}}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    height: 0px;
+}}
 
 """
 

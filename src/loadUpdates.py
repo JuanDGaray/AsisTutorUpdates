@@ -41,7 +41,7 @@ class UpdateDriver():
     def __init__(self):
         try:
             chromedriver_autoinstaller.install()
-            driver = webdriver.Chrome(options=options)
+            driver = webdriver.Chrome()
             chrome_driver_version = driver.capabilities['chrome']['chromedriverVersion']
             print("Versión del ChromeDriver:", chrome_driver_version)
         except Exception as e:
