@@ -1,11 +1,8 @@
-import time
-import sys
 from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
 from componentsUI import topWindow, home, loggin
 from src.selenuimManager import SelenuimThreadLoggin
 from src.dataBaseManager import db_manager
-import functools
 
 processLoading = None
 userText = None

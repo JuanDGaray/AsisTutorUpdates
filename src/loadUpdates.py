@@ -21,7 +21,8 @@ def reiniciar_programa():
 
 class UpdateApp():
     def __init__(self):
-        client = Client('pyu_settings.py', refresh=True)
+        settings_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'pyu_settings.py'))
+        client = Client(settings_path, refresh=True)
         client.refresh()
         update = client.update_check()
         if update:
