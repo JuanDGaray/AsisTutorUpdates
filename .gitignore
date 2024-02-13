@@ -25,8 +25,8 @@ pyupdater/
 # Selenium logs
 geckodriver.log
 chromedriver.log
-keypack
-clientconfig.py
+keypack.pyu
+client_config.py
 pyu_settings.py
 
 # IDE-specific files
