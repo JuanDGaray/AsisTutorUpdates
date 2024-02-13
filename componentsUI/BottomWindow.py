@@ -14,13 +14,23 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
 import webbrowser, time
+from utils.constants import imageBS64
 from utils import constants
+import base64
 
 Theme = "Light"
 frameDelete = 0
 
 instSele= SelenuimThreadLoggin()
 intDB = db_manager()
+
+def bs4Process(bs4):
+    image_data = base64.b64decode(bs4.split(',')[1])
+    pixmap = QtGui.QPixmap()
+    pixmap.loadFromData(image_data)
+
+    return pixmap
+
 
 class SpiderChartWidget(QtWidgets.QWidget):
     def __init__(self, data, categories):
@@ -154,7 +164,7 @@ class BottomWidget():
                         ButtonTaskSummary = QtWidgets.QPushButton()
                         ButtonTaskSummary.setContentsMargins(0,0,0,0)
                         ButtonTaskSummary.setObjectName("ButtonMetrics")
-                        icon = QtGui.QIcon("assets/images/whatsapp.png")
+                        icon = QtGui.QIcon(bs4Process(imageBS64["wa"]))
                         ButtonTaskSummary.setIcon(icon)
                         ButtonTaskSummary.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                         ButtonTaskSummary.clicked.connect(partial(self.generatorSummaryWeek,id, attedancePercent))
@@ -163,7 +173,7 @@ class BottomWidget():
                         ButtonSummaryGeneral = QtWidgets.QPushButton()
                         ButtonSummaryGeneral.setContentsMargins(0,0,0,0)
                         ButtonSummaryGeneral.setObjectName("ButtonMetrics")
-                        icon = QtGui.QIcon("assets/images/money-graph-with-up-arrow.png")
+                        icon = QtGui.QIcon(bs4Process(imageBS64["money"]))
                         ButtonSummaryGeneral.setIcon(icon)
                         ButtonSummaryGeneral.clicked.connect(partial(self.OpenTemplateMetric,id,))
                         ButtonSummaryGeneral.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -316,14 +326,14 @@ class BottomWidget():
             ButtonRecord = QtWidgets.QPushButton()
             ButtonRecord.setContentsMargins(0,0,0,0)
             ButtonRecord.setObjectName("ButtonMetrics")
-            icon = QtGui.QIcon("assets/images/video-camera.png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["record"]))
             ButtonRecord.setIcon(icon)
             ButtonRecord.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
             buttonMetricsLayout.addWidget(ButtonRecord)
             
             ButtonUpdate = QtWidgets.QPushButton()
             ButtonUpdate.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon("assets/images/actualizar.png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["update"]))
             ButtonUpdate.setIcon(icon)
             ButtonUpdate.setObjectName("ButtonMetrics")
             buttonMetricsLayout.addWidget(ButtonUpdate)
@@ -332,7 +342,7 @@ class BottomWidget():
             
             ButtonPoduin = QtWidgets.QPushButton()
             ButtonPoduin.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon("assets/images/podium (2).png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["poduim2"]))
             ButtonPoduin.setIcon(icon)
             ButtonPoduin.setObjectName("ButtonMetrics")
             ButtonPoduin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -424,7 +434,7 @@ class BottomWidget():
             boxLoadingLabel = QtWidgets.QWidget()           
             verticalLayouMetricLoading = QtWidgets.QVBoxLayout(boxLoadingLabel)
             verticalLayouMetricLoading.setAlignment(QtCore.Qt.AlignCenter)
-            movie = QtGui.QMovie("assets\images\Rolling-1s-18px.gif")
+            movie = QtGui.QMovie(imageBS64["rolling"])
             labelGif = QtWidgets.QLabel()
             labelGif.setMinimumSize(30,30)
             labelGif.setMovie(movie)
@@ -434,7 +444,7 @@ class BottomWidget():
             verticalLayouMetricLoading.addWidget(labelGif)
             verticalLayouMetricLoading.addWidget(loadingMetricInfo)
             
-            ButtonExit.clicked.connect(partial(self.exitFrame, frame, stacked_widget_now, name, MetricsGroupContainer))
+            ButtonExit.clicked.connect(partial(self.exitFrame, frame, stacked_widget_now, name, MetricsGroupContainer, nameGroup))
 
             loadingMetricInfo.setText(f"Loading metrics for {nameGroup} ...")
             stackedWidget.addWidget(MetricsGroupContainer)
@@ -449,7 +459,7 @@ class BottomWidget():
             thread1.start()
 
             def updateMetricsGroup():
-                self.exitFrame(frame, stacked_widget_now, name, MetricsGroupContainer)
+                self.exitFrame(frame, stacked_widget_now, name, MetricsGroupContainer, None)
                 self.AddButtonFrameGroup(parent, nameGroup,stackedWidget, id_group, n_student,  curso, last_class, next_class)
             ButtonUpdate.clicked.connect(updateMetricsGroup)
                  
@@ -458,7 +468,7 @@ class BottomWidget():
 
           
 
-    def exitFrame(self,ind, frame, NAME, widgetMetric):
+    def exitFrame(self,ind, frame, NAME, widgetMetric, name):
                 
                 widgetMetric.deleteLater()
                 self.stackedWidget.removeWidget(widgetMetric)
@@ -477,6 +487,7 @@ class BottomWidget():
                     self.stackedWidget.setCurrentIndex(0)
                 if frame is not None:
                     frame.currentChanged.disconnect()
+                instSele.quitDriver(name)
 
     
          

@@ -6,14 +6,24 @@ from src.dataBaseManager import db_manager
 from src.selenuimManager import seleniumTakeMetricsByGroupBasic
 from functools import partial
 from utils import stylesheetUI
+from utils.constants import imageBS64
 import webbrowser
+import base64
+
 
 listMetrics = []
 colSpam = 0
 
 initTW = topWindow.TopWidget()
 initBW = BottomWindow.BottomWidget()
+instSeleMBG= seleniumTakeMetricsByGroupBasic()
 
+def bs4Process(bs4):
+    image_data = base64.b64decode(bs4.split(',')[1])
+    pixmap = QtGui.QPixmap()
+    pixmap.loadFromData(image_data)
+
+    return pixmap
 
 class Inithome(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -35,7 +45,8 @@ class Inithome(QtWidgets.QWidget):
             self.verticalLayoutSidebar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
             self.labelGif = labelGif
             self.infoLabelTohome = infoText
-            self.iconWA = QtGui.QIcon("assets/images/whatsapp.png")
+            
+            self.iconWA = QtGui.QIcon(bs4Process(imageBS64['wa']))
         notification_signal = pyqtSignal(str, str, str, str, str, str, str, str)
 
         @pyqtSlot(str, str, str, str, str, str, str, str)
@@ -251,7 +262,7 @@ class Inithome(QtWidgets.QWidget):
         self.headerHomeContainer.setObjectName("headerHomeContainer")
         self.horizaontalLayoutheaderHome = QtWidgets.QHBoxLayout(self.headerHomeContainer)
         self.buttonGridGenerator = QtWidgets.QPushButton()
-        icon = QtGui.QIcon("assets/images/layout.png")
+        icon = QtGui.QIcon(bs4Process(imageBS64["layout"]))
         self.buttonGridGenerator.setIcon(icon)
         self.buttonGridGeneratorOn = False  
         self.buttonTableGeneratorOn = True
@@ -262,12 +273,12 @@ class Inithome(QtWidgets.QWidget):
         self.buttonGridGenerator.setObjectName("ButtonTable")
         self.buttonTableGenerator = QtWidgets.QPushButton()
         self.buttonTableGenerator.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        icon = QtGui.QIcon("assets/images/more.png")
+        icon = QtGui.QIcon(bs4Process(imageBS64["more"]))
         self.buttonTableGenerator.setIcon(icon)
         self.buttonTableGenerator.clicked.connect(self.MakeTable)    
         self.buttonTableGenerator.setObjectName("ButtonGrid")
 
-        movie = QtGui.QMovie("assets\images\Rolling-1s-18px.gif")
+        movie = QtGui.QMovie(imageBS64["rolling"])
         self.labelGif = QtWidgets.QLabel()
         self.labelGif.setMinimumSize(30,30)
         self.labelGif.setMovie(movie)
@@ -348,7 +359,7 @@ class Inithome(QtWidgets.QWidget):
         self.sidebar.raise_()
 
         self.toggle_button = QtWidgets.QPushButton(self.sidebar)
-        icon = QtGui.QIcon("assets/images/left-chevron.png")
+        icon = QtGui.QIcon(bs4Process(imageBS64["left"]))
         self.toggle_button.setIcon(icon)
         self.toggle_button.setGeometry(3,20, 30,30)
         self.toggle_button.clicked.connect(self.toggle_sidebar)
@@ -687,14 +698,14 @@ class Inithome(QtWidgets.QWidget):
             ButtonRecord = QtWidgets.QPushButton()
             ButtonRecord.setContentsMargins(0,0,0,0)
             ButtonRecord.setObjectName("ButtonMetrics")
-            icon = QtGui.QIcon("assets/images/video-camera.png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["record"]))
             ButtonRecord.setIcon(icon)
             ButtonRecord.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
             buttonMetricsLayout.addWidget(ButtonRecord)
             
             ButtonAnalytics = QtWidgets.QPushButton()
             ButtonAnalytics.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon("assets/images/money-graph-with-up-arrow.png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["money"]))
             ButtonAnalytics.setIcon(icon)
             ButtonAnalytics.setObjectName("ButtonMetrics")
             buttonMetricsLayout.addWidget(ButtonAnalytics)
@@ -703,7 +714,7 @@ class Inithome(QtWidgets.QWidget):
             
             ButtonPoduin = QtWidgets.QPushButton()
             ButtonPoduin.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon("assets/images/podium (2).png")
+            icon = QtGui.QIcon(bs4Process(imageBS64["poduim2"]))
             ButtonPoduin.setIcon(icon)
             ButtonPoduin.setObjectName("ButtonMetrics")
             ButtonPoduin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -722,16 +733,18 @@ class Inithome(QtWidgets.QWidget):
 
     def onDonutThreadFinished(self):
         print("Donut Thread Finished")
+        instSeleMBG.driverQuit()
 
     def putMetricDonut(self):
-        instSeleMBG= seleniumTakeMetricsByGroupBasic()
+        
         for n,group in enumerate(self.n_group_list): 
             listData = instSeleMBG.findPoints(group)
             listaLowBalance = listData[0]
             rows=listData[1]
-            attNO = listData[2]
+            attNO = listData[2] - 1
             self.changeDataDonut(rows, n, group[0], attNO)
             self.putNewsSideBar(listaLowBalance, n, )
+        
 
     def changeDataDonut(self,rows,n, id, noAtt):
             if noAtt  > 0:
@@ -987,7 +1000,7 @@ class Inithome(QtWidgets.QWidget):
                 ButtonRecord = QtWidgets.QPushButton()
                 ButtonRecord.setContentsMargins(0,0,0,0)
                 ButtonRecord.setObjectName("ButtonMetrics")
-                icon = QtGui.QIcon("assets/images/video-camera.png")
+                icon = QtGui.QIcon(bs4Process(imageBS64["record"]))
                 ButtonRecord.setIcon(icon)
                 ButtonRecord.setStyleSheet(button_style)
                 ButtonRecord.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -1047,7 +1060,7 @@ class Inithome(QtWidgets.QWidget):
                               
                 ButtonAnalytics = QtWidgets.QPushButton()
                 ButtonAnalytics.setContentsMargins(0,0,0,0)
-                icon = QtGui.QIcon("assets/images/stats.png")
+                icon = QtGui.QIcon(bs4Process(imageBS64["stats"]))
                 ButtonAnalytics.setIcon(icon)
                 ButtonAnalytics.setStyleSheet(button_style)
                 ButtonAnalytics.setObjectName("ButtonMetrics")
@@ -1058,7 +1071,7 @@ class Inithome(QtWidgets.QWidget):
                 
                 ButtonPoduin = QtWidgets.QPushButton()
                 ButtonPoduin.setContentsMargins(0,0,0,0)
-                icon = QtGui.QIcon("assets/images/podium.png")
+                icon = QtGui.QIcon(bs4Process(imageBS64["poduim3"]))
                 ButtonPoduin.setIcon(icon)
                 ButtonPoduin.setStyleSheet(button_style)
                 ButtonPoduin.setMaximumSize(32,32)

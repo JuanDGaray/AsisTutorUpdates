@@ -1,8 +1,12 @@
 from selenium import webdriver
 import requests, sys, os
 import subprocess
+import logging
 import chromedriver_autoinstaller
+from webdriver_manager.firefox import GeckoDriverManager
 from __version__ import __version__
+import traceback
+from pyupdater.client import Client
 
 driver = None
 options = webdriver.ChromeOptions()
@@ -17,45 +21,35 @@ def reiniciar_programa():
 
 class UpdateApp():
     def __init__(self):
-        versionThisApp = __version__
-        print("Version app:", versionThisApp)
-        lastVersion = self.takeLastVersion('JuanDGaray', 'AsisTutor2.0')
-        print("Version repo:", lastVersion)
-        if lastVersion and self.compareVersions(versionThisApp, lastVersion):
-            print(f"¡Hay una nueva versión disponible: {lastVersion}!")
-            self.UpdateApp()
-        else:
-            print("La aplicación está actualizada.")
-        
-
-    def takeLastVersion(rself, repo_usuario, repo_nombre):
-        url = f'https://api.github.com/repos/{repo_usuario}/{repo_nombre}/releases/latest'
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('name')
-        return None
-
-    def compareVersions(self, version_actual, version_nueva):
-        return version_actual != version_nueva
-
-    def UpdateApp(self):
-        subprocess.run(['git', 'branch', '--set-upstream-to=origin/master', 'master'])
-        result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
-        reiniciar_programa()
+        client = Client('pyu_settings.py', refresh=True)
+        client.refresh()
+        update = client.update_check()
+        if update:
+            client.download_update()
+            client.extract_restart()
 
         
 
 
-class UpdateDriver(): 
+
+class UpdateDriver:
+    """
+    Class to update the Chrome and Firefox webdrivers.
+    """
+
     def __init__(self):
+        """
+        Initialize the class and install the webdrivers.
+        """
         try:
-            chromedriver_autoinstaller.install()
-            driver = webdriver.Chrome()
-            chrome_driver_version = driver.capabilities['chrome']['chromedriverVersion']
-            print("Versión del ChromeDriver:", chrome_driver_version)
-        except Exception as e:
-            print("Ocurrió un error:", str(e))
-            import traceback
-            traceback.print_exc()
+            logging.error('Starting ChromeDriver installation...')
+            os.system('chromedriver_autoinstaller.install()')
+            logging.error('ChromeDriver installation completed.')
 
+            logging.error('Starting GeckoDriver installation...')
+            subprocess.check_call([sys.executable, '-m', 'webdriver_manager.firefox', 'install'])
+            logging.error('GeckoDriver installation completed.')
+
+        except Exception as e:
+            logging.error(f"An error occurred: {str(e)}")
+            logging.error(traceback.format_exc())

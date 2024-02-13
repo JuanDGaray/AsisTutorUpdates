@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.chrome.options import Options as OptionsC
+from selenium.webdriver.firefox.options import Options as OptionsF
 import threading as th
 from bs4 import BeautifulSoup 
 from datetime import datetime, timedelta
@@ -23,13 +25,36 @@ cacheStudent = {}
 grouped_driver_packs = {}
 grouped_driver_cache = {}
 
-options = webdriver.ChromeOptions()
+options = OptionsC()
 options.add_argument('headless')
 options.add_argument("disable-gpu")
-options.add_argument("--log-level=3") 
-driverExecute = 'c'
-
+options.add_argument("--log-level=3")
+options.add_argument('--disable-javascript') 
+options.add_argument('--disable-animations')
+options.add_argument('--disable-cache')
+options.add_argument('--ignore-certificate-errors')
+options.add_argument('--disable-plugins-discovery')
+options.add_argument('--disable-updater')
+options.add_argument('--disable-spellcheck')
+firefox_options = OptionsF()
+firefox_options.add_argument('--headless')
+firefox_options.add_argument('-private')
+firefox_options.add_argument('-js')
+firefox_options.add_argument('-disable-animations')
+firefox_options.add_argument('-disable-session-store')
+firefox_options.add_argument('-disable-gpu')
+firefox_options.add_argument('-disable-cache')
+firefox_options.add_argument('-disable-updates')
+firefox_options.add_argument('-disable-autocomplete')
+firefox_options.add_argument('-disable-autodiscover')
+firefox_options.add_argument('-disable-web-security')
+firefox_options.add_argument('-disable-plugins-discovery')
+firefox_options.add_argument('-disable-updater')
+firefox_options.add_argument('-disable-spellcheck')
 InstaciaADB = dataBaseManager.db_manager()
+
+
+
 class SelenuimThreadLoggin(QThread):
     update_text_signal = pyqtSignal(str)
     finished_signal = pyqtSignal(bool, str)
@@ -50,10 +75,13 @@ class SelenuimThreadLoggin(QThread):
         global driver
         """ try:"""
         self.update_text_signal.emit("Open page Kodland...")
-        if driverExecute == "c":
+        try:
+            driver= webdriver.Firefox(options=firefox_options)
+        except:
             driver = webdriver.Chrome(options=options)
-        else:
-            driver= webdriver.Firefox()
+            driver.set_window_size(800, 600)
+            driver.delete_all_cookies()
+
         self.update_text_signal.emit("Comprobando credenciales...")
         self.login_scrapping1(self.UserName,self.UserPass,self.NewLogin)
         """except Exception as e:
@@ -398,12 +426,12 @@ class SelenuimThreadLoggin(QThread):
             if name_group in grouped_driver_packs:
                 driver2 = grouped_driver_packs[name_group]
             else:
-                if driverExecute == "c":
+                try:
+                    driver2= webdriver.Firefox(options=firefox_options)
+                except:
                     driver2 = webdriver.Chrome(options=options)
                     driver2.set_window_size(800, 600)
                     driver2.delete_all_cookies()
-                else:
-                    driver2= webdriver.Firefox()
                 driver2.get(f"https://backoffice.kodland.org/en/group_{id_group}/")
                 mBox = driver2.find_element(by=By.CSS_SELECTOR,value='#id_username')
                 mBox.send_keys(user)
@@ -498,7 +526,10 @@ class SelenuimThreadLoggin(QThread):
                                 )
             return cacheStudent
 
-
+    def quitDriver(self, name):
+        driverGroup = grouped_driver_packs[name]
+        driverGroup.quit()
+        
 
     
                
@@ -551,6 +582,9 @@ class seleniumTakeMetricsByGroupBasic():
             except:
                 InstaciaADB.addEngagementToDb(group[0], (0,0,'yes'))
                 return [listStLowBalance, [0,0,'yes'], 0]
+            
+    def driverQuit(self):
+        driver.quit()
 
 def waitElementCSS(driver, XPATH):
     return WebDriverWait(driver, 20).until(

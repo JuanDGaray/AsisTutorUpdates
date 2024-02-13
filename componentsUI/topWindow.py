@@ -1,7 +1,15 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 from utils import stylesheetUI
+from utils.constants import imageBS64
 Theme = "Light"
+import base64
+def bs4Process(bs4):
+    image_data = base64.b64decode(bs4.split(',')[1])
+    pixmap = QtGui.QPixmap()
+    pixmap.loadFromData(image_data)
+
+    return pixmap
 
 class TopWidget():
       
@@ -35,7 +43,7 @@ class TopWidget():
 
         
         buttoTheme = QtWidgets.QPushButton(buttoThemeWidget)
-        icon = QtGui.QIcon("assets/images/soleado.png")
+        icon = QtGui.QIcon(bs4Process(imageBS64["sol"]))
         buttoTheme.setIcon(icon)
         buttoTheme.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
