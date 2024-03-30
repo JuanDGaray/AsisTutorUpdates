@@ -14,10 +14,30 @@ from componentsUI import loading, home, loggin
 from src import dataBaseManager
 from utils import constants
 import math
+import pandas  as pd
+from utils.constants import data
+from cryptography.fernet import Fernet as fr
+import json, os
+
+imageBS64  = data["imageBS64"]
+href_couse_latamByTotalName = data["href_couse_latamByTotalName"]
+lesson_by_course_latam= data["lesson_by_course_latam"] 
+id_couse_latamByTotalName = data["id_couse_latamByTotalName"]
+textXPathgroup = data["textXPathgroup"]
+points_total_course_latam = data["points_total_course_latam"]
+shortName_couse_latam = data["shortName_couse_latam"]
+color_cursoBycode = data["color_cursoBycode"]
+
+
+rankData = {}
 
 def waitElement(driver, XPATH):
-                return WebDriverWait(driver, 20).until(
+                return WebDriverWait(driver, 50).until(
                     EC.presence_of_element_located((By.XPATH, XPATH))
+                )
+def waitElementCSS(driver, CSS):
+                return WebDriverWait(driver, 50).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, CSS))
                 )
 driver = None
 cacheStudent = {}
@@ -29,7 +49,6 @@ options = OptionsC()
 options.add_argument('headless')
 options.add_argument("disable-gpu")
 options.add_argument("--log-level=3")
-options.add_argument('--disable-javascript') 
 options.add_argument('--disable-animations')
 options.add_argument('--disable-cache')
 options.add_argument('--ignore-certificate-errors')
@@ -38,8 +57,6 @@ options.add_argument('--disable-updater')
 options.add_argument('--disable-spellcheck')
 firefox_options = OptionsF()
 firefox_options.add_argument('--headless')
-firefox_options.add_argument('-private')
-firefox_options.add_argument('-js')
 firefox_options.add_argument('-disable-animations')
 firefox_options.add_argument('-disable-session-store')
 firefox_options.add_argument('-disable-gpu')
@@ -53,6 +70,8 @@ firefox_options.add_argument('-disable-updater')
 firefox_options.add_argument('-disable-spellcheck')
 InstaciaADB = dataBaseManager.db_manager()
 
+UserName = None
+UserPass = None
 
 
 class SelenuimThreadLoggin(QThread):
@@ -61,52 +80,99 @@ class SelenuimThreadLoggin(QThread):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.UserName = None
-        self.UserPass = None
         self.NewLogin = None
         
-    def set_credentials(self, UserName, UserPass, NewLogin):
-        self.UserName = UserName
-        self.UserPass = UserPass
+    def set_credentials(self, UserNameCookie, UserPassCookie, NewLogin):
+        global UserName, UserPass
+        UserName = UserNameCookie
+        UserPass = UserPassCookie
+        
         self.NewLogin = NewLogin 
         
 
     def run(self):
         global driver
-        """ try:"""
         self.update_text_signal.emit("Open page Kodland...")
         try:
-            driver= webdriver.Firefox(options=firefox_options)
+            driver= webdriver.Firefox()
         except:
             driver = webdriver.Chrome(options=options)
             driver.set_window_size(800, 600)
             driver.delete_all_cookies()
 
         self.update_text_signal.emit("Comprobando credenciales...")
-        self.login_scrapping1(self.UserName,self.UserPass,self.NewLogin)
+        self.login_scrapping1(UserName,UserPass,self.NewLogin)
         """except Exception as e:
                 self.finished_signal.emit(True, f"Error: {e}")
                 driver.quit()"""
+        
+    def fasd3248asd(self, string):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        archivojas = os.path.join(parent_dir, "componentsUI", "jsvdrh31254.py")
+        fernet = fr(string)
+        with open(archivojas, 'rb') as file:
+            dataE = file.read()
+        data = fernet.decrypt(dataE)
+        with open(archivojas, "wb") as f:
+            f.write(data)
+        from AsisTutorUpdatesConsta.jsvdrh31254 import RunKey
+        runner = RunKey()
+        json_data = runner.run()
+        data = json.loads(json_data)
+        value = data['secrets'][0]['version']['value']
+        archivo_json = os.path.join(parent_dir, "componentsUI", "651asda684.json")
+        with open(archivojas, "wb") as f:
+            f.write(dataE)
+        with open(archivo_json, 'r') as file:
+            dataJson = file.read()
+            jsonD = fr(value)
+            dataJsonD = jsonD.decrypt(dataJson)
+            self.dataJsonD = json.loads(dataJsonD)
 
+    def get_dataJsonD(self):
+        return self.dataJsonD
+    
+    def get_name(self):
+        return self.NameTutor
+    
     def login_scrapping1(self, UserName,UserPass,NewLogin): 
-            userPortable = UserName
-            passwordPortable = UserPass
-            driver.get("https://backoffice.kodland.org/en/groups/")
-            mBox = driver.find_element(by=By.CSS_SELECTOR,value='#id_username')
-            mBox.send_keys(UserName)
-            mBox = driver.find_element(by=By.XPATH, value='//*[@id="id_password"]')
-            mBox.send_keys(UserPass)
-            button = driver.find_element(by=By.XPATH, value='/html/body/div[1]/div[1]/form/button')
-            button.click()  
-            url_join = driver.current_url
-            if url_join == 'https://backoffice.kodland.org/en/groups/':
-                self.update_text_signal.emit("Extracting groups...")
-                self.take_groups()
-                self.update_text_signal.emit("Open groups...")
-                self.finished_signal.emit(False, None)
-            else:
-                self.finished_signal.emit(True, None)
-                driver.quit()
+            try:
+                userPortable = UserName
+                passwordPortable = UserPass
+                driver.get("https://backoffice.kodland.org/en/groups/")
+                mBox = driver.find_element(by=By.CSS_SELECTOR,value='#id_username')
+                mBox.send_keys(UserName)
+                mBox = driver.find_element(by=By.XPATH, value='//*[@id="id_password"]')
+                mBox.send_keys(UserPass)
+                button = driver.find_element(by=By.XPATH, value='/html/body/div[1]/div[1]/form/button')
+                button.click()
+                self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
+                try:
+                    url_join = driver.current_url
+                    if url_join == 'https://backoffice.kodland.org/en/groups/':
+                        self.update_text_signal.emit("Extracting groups...")
+                        self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
+                        try:
+                            self.fasd3248asd("-G34PgnvDtjQzALQyDYmCJ5kOARhLFjrSLgNg1wJFZY=")
+                        except Exception as e:
+                            print(e)
+                            pass
+                        isTutor = driver.find_elements(by=By.XPATH, value=textXPathgroup["isTutor"])
+                        if len(isTutor) >= 1:
+                            self.finished_signal.emit(True, 'noTutor')
+                            driver.quit()
+                            return
+                        self.take_groups()
+                        self.update_text_signal.emit("Open groups...")
+                        self.finished_signal.emit(False, None)
+                except:
+                    self.finished_signal.emit(True, 'badCredentiale')
+                    driver.quit()
+            except Exception as e: 
+                print(e)
+                self.finished_signal.emit(True, 'noDriver')
+                
 
     def take_groups(self):
             global drive
@@ -121,39 +187,63 @@ class SelenuimThreadLoggin(QThread):
             for table in range(1,n_tablegroup+1):
                 n_group = (int(len(soup.find_all('a', class_="table-link"))/2))
                 for group in range(n_group):
-                    id = waitElement(driver,'//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[1]')
+                    id_path = textXPathgroup["id_group"].replace("#groupIndx#",str(group+1))
+                    id = waitElement(driver,id_path)
                     id = id.text
-                    namegroup = waitElement(driver,'//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[2]')
+                    namegroup_path = textXPathgroup["namegroup"].replace("#namegroup#",str(group+1))
+                    namegroup = waitElement(driver, namegroup_path)
                     namegroup = namegroup.text
                     self.update_text_signal.emit(f"Extracting groups ({namegroup})")
-                    sa = waitElement(driver,'//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[6]')
+                    sa = waitElement(driver,textXPathgroup["sa"].replace("#sa#",str(group+1)))
                     sa = sa.text
-                    c = waitElement(driver,'//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[4]')
+                    c = waitElement(driver,textXPathgroup["course"].replace("#groupIndx#",str(group+1)))
                     c = c.text
-                    ls =  waitElement(driver,'//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[7]')
+                    ls =  waitElement(driver,textXPathgroup["lesson"].replace("#groupIndx#",str(group+1)))
+                    
                     ls = ls.text
                     try:
                         start = driver.find_element(by=By.XPATH, value='//*[@id="table_to_change"]/table/tbody/tr['+str(group+1)+']/td[5]').text
                         start= start[:-6]
                     except:
-                        start = "0"
+                        start = "New"
                     ahora = datetime.now()
-                    try:
-                        last_class = datetime.strptime(start, "%d.%m.%Y")
-                        y_t = int(abs(((last_class+timedelta((int(((ahora - last_class)//7).total_seconds())//86400)*7))-ahora).total_seconds()//86400)) 
-                        if y_t == 7:
-                            y_t = "Mañana"
-                        elif (8-y_t) == 7:
-                            y_t = "Hoy"
-                        else:
-                            y_t = f"En {str(8-y_t)} dias"
-                        s_t = str(last_class+timedelta((int(((ahora - last_class)//7).total_seconds())//86400)*7))
-                        s_t= s_t[:-9]
-                    except:
+                    new = False
+                    if start  != "New":
+                        try:
+                            last_class = datetime.strptime(start, "%d.%m.%Y")
+                            
+                            diferencia = last_class - ahora
+                            if diferencia.days < 0:
+                                y_t = ((last_class+timedelta((int(((ahora - last_class)//7).total_seconds())//86400)*7))-ahora).total_seconds()//86400
+                                if y_t <0:
+                                    y_t = int(abs(y_t)) 
+                                    if y_t == 7:
+                                        y_t = "Tomorrow"
+                                    elif (8-y_t) == 7:
+                                        y_t = "Today"
+                                    else:
+                                        y_t = f"En {str(8-y_t)} dias"
+                                    s_t = str(last_class+timedelta((int(((ahora - last_class)//7).total_seconds())//86400)*7))
+                                    s_t= s_t[:-9]
+                            else:
+                                new = True
+                                if  diferencia.days == 0:
+                                    y_t = "Tomorrow"
+                                else:
+                                    y_t = f"Start in {diferencia.days + 1} days"
+                                s_t = None
+                        except ValueError as e:
+                            print(f"Error: {e}")
+                            s_t = None
+                            y_t = None
+                    else:
+                        y_t = "New"
                         s_t = None
-                        y_t = None
-                    
-                    row = f"{id},'{namegroup}','{sa}','{c}','{ls}','{s_t}','{y_t}', 'undefine', 'undefine', 'undefine', 'NULL', 'NULL'"
+                    if new or (y_t == "Today" and len(ls)<=1): 
+                        row = f"{id},'{namegroup}','{sa}','{c}','{ls}','{s_t}','{y_t}', 'undefine', 'undefine', 'no', 'NULL', 'New'"
+                    else:
+                        row = f"{id},'{namegroup}','{sa}','{c}','{ls}','{s_t}','{y_t}', 'undefine', 'undefine', 'undefine', 'NULL', 'NULL'"
+
                     InstaciaADB.addValueTableGroup(row)
                 if table < n_tablegroup:
                     if table == 1:
@@ -211,19 +301,19 @@ class SelenuimThreadLoggin(QThread):
 
                 #Nivel de asistencia
                 attend_level = None
-                if miss_percent < 20:
+                if miss_percent < 2:
                     attend_level = 'Muy baja'
-                elif miss_percent < 40:
+                elif miss_percent < 4:
                     attend_level = 'Baja'
-                elif miss_percent < 56:
+                elif miss_percent < 5.6:
                     attend_level = 'Regular'
-                elif miss_percent < 70:
+                elif miss_percent < 7.0:
                     attend_level = 'Media'
-                elif miss_percent < 80:
+                elif miss_percent < 8.0:
                     attend_level = 'alta'
-                elif miss_percent < 90:
+                elif miss_percent < 9.0:
                     attend_level = 'Muy alta'
-                elif miss_percent == 100:
+                elif miss_percent == 10.0:
                     attend_level = 'Perfecta'
                 
 
@@ -237,6 +327,7 @@ class SelenuimThreadLoggin(QThread):
                 total_activity_home_attend = 0
                 total_activity_home_no_attend = 0
                 no_attend_activity_general = {}
+                total_href_activity_miss = []
                 no_send_activity_general = {}
                 ModuleActivityTemplate = {'class_miss':[],
                                         'class_attend':[],
@@ -262,9 +353,9 @@ class SelenuimThreadLoggin(QThread):
                     no_send_activity_lesson = []
                     no_send_activity_lesson_href = []
                     #Clase
+                    waitElementCSS(driver2, f'#full-progress-table > tbody > tr:nth-child({1}) > td:nth-child(2) > ul > li:nth-child({1}) > a')
                     for n_activity in range(1, (activity[f'L{n_lesson}'][0])+1):
                         total_task +=1
-                        waitElement(driver2, f'/html/body/div[3]/div[2]/div/div[12]/div/div[1]/table/tbody/tr/td[3]')
                         miss_ac = len(driver2.find_elements(by=By.CSS_SELECTOR, value=f'#full-progress-table > tbody > tr:nth-child({n_lesson}) > td:nth-child(2) > ul > li:nth-child({n_activity}) > a > div.student_attendance.student_attendance_mini.student_attendance-miss'))
                         if miss_ac == 1:
                             activity_class_miss +=1 
@@ -278,13 +369,13 @@ class SelenuimThreadLoggin(QThread):
                             activity_class_attend +=1
                             continue                   
                         absence_ac = len(driver2.find_elements(by=By.CSS_SELECTOR, value=f'#full-progress-table > tbody > tr:nth-child({n_lesson}) > td:nth-child(2) > ul > li:nth-child({n_activity}) > a > div.student_attendance.student_attendance_mini.student_attendance-absence'))                 
-                        #NO FUNCIONAN LOS HIPERVICULOS REVISAR
                         if absence_ac == 1:
                             no_attend_activity_lesson.append(f'CW{n_activity}')
                             href_no_attend_class =  driver2.find_element(by=By.CSS_SELECTOR, value=f'#full-progress-table > tbody > tr:nth-child({n_lesson}) > td:nth-child(2) > ul > li:nth-child({n_activity}) > a')
                             href_class = href_no_attend_class.get_attribute('href')
                             activity_class_no_attend +=1
                             no_attend_activity_lesson_href.append(href_class)
+                            total_href_activity_miss.append(href_class)
                             continue
                     #Casa
                     for n_activity in range(1, (activity[f'L{n_lesson}'][1])+1):
@@ -307,6 +398,7 @@ class SelenuimThreadLoggin(QThread):
                             href_no_attend_home =  driver2.find_element(by=By.CSS_SELECTOR, value=f'#full-progress-table > tbody > tr:nth-child({n_lesson}) > td:nth-child(2) > ul > li:nth-child({n_activity}) > a')
                             href_home = href_no_attend_home.get_attribute('href')
                             no_attend_activity_lesson_href.append(href_home)
+                            total_href_activity_miss.append(href_home)
                             activity_home_no_attend +=1
                             continue
                     if len(no_attend_activity_lesson) >= 1:
@@ -347,8 +439,10 @@ class SelenuimThreadLoggin(QThread):
                 total_task_miss = total_activity_class_miss + total_activity_home_miss
                 #Tareas realizadas porcentaje
                 total_task = total_activity_class_miss + total_activity_class_attend + total_activity_class_no_attend + total_activity_home_miss + total_activity_home_attend + total_activity_home_no_attend
-                total_task_attend = round(((total_activity_class_attend + total_activity_class_no_attend+total_activity_home_attend+total_activity_home_no_attend) / total_task)*100)
-
+                try:
+                    total_task_attend = round(((total_activity_class_attend + total_activity_class_no_attend+total_activity_home_attend+total_activity_home_no_attend) / total_task)*100)
+                except:
+                    total_task_attend = 0
 
                 #total de tareas en clase realizadas
                 total_task_class_attend = total_activity_class_attend + total_activity_class_miss
@@ -367,10 +461,9 @@ class SelenuimThreadLoggin(QThread):
                 #Total de actividade no revisadas
                 total_task_no_attend = total_activity_home_no_attend + total_activity_class_no_attend
 
-                #Rank y Puntaje
-                rank_point = driver2.find_element(by=By.XPATH, value=f'/html/body/div[3]/div[2]/div/div[12]/div/div[1]/table/tbody/tr/td[3]').text
-                student_phone = driver2.find_element(by=By.XPATH, value=f'/html/body/div[3]/div[2]/div/div[2]/div[2]/table/tbody/tr[3]/td/a').text
-                student_age =  driver2.find_element(by=By.XPATH, value=f'/html/body/div[3]/div[2]/div/div[2]/div[1]/table/tbody/tr[2]/td').text
+                rank_point = waitElement(driver2, textXPathgroup['rank_point']).text
+                student_phone = waitElement(driver2, textXPathgroup['studentPhone']).text
+                student_age =  waitElement(driver2, textXPathgroup['studentPhone']).text
                 rank_point = rank_point.split('/')
 
                 #Rank
@@ -420,7 +513,9 @@ class SelenuimThreadLoggin(QThread):
                     total_task,
                     total_task_miss,
                     id_course,
-                    n_class
+                    n_class,
+                    no_attend_activity_general,
+                    total_href_activity_miss,
                     ]
 
             if name_group in grouped_driver_packs:
@@ -458,9 +553,9 @@ class SelenuimThreadLoggin(QThread):
                 name_course= grouped_driver_cache[name_group]["name_course"]
             else:
                 activity = {}
-                n_class= driver2.find_element(by=By.XPATH, value='/html/body/div[4]/div[2]/div/div[2]/div/div[1]/table/tbody/tr[12]/td').text.split('/')
+                n_class= waitElementCSS(driver2, '.group_card_table > tbody:nth-child(1) > tr:nth-child(12) > td:nth-child(2)').text.split('/')
                 n_class = int(n_class[0])
-                name_course= driver2.find_element(by=By.XPATH, value='/html/body/div[4]/div[2]/div/div[2]/div/div[1]/table/tbody/tr[14]/td').text.split('/')
+                name_course= waitElementCSS(driver2, '.group_card_table > tbody:nth-child(1) > tr:nth-child(14) > td:nth-child(2)').text
                 grouped_driver_cache[name_group] = {}
                 grouped_driver_cache[name_group]["n_class"] = n_class
                 grouped_driver_cache[name_group]["name_course"] = name_course
@@ -493,9 +588,12 @@ class SelenuimThreadLoggin(QThread):
                     assis_history["Module"].append(f'Mod {mod}')
                     assis_history["Real lesson"].append(attend_class + error_class)
                     assis_history["total lesson"].append(attend_class + error_class + absence_class + miss_class)
-
-                miss_percent_list.append((total_miss / n_class)*100)
-                atten_percent_list.append((total_attend / n_class))
+                try:
+                    miss_percent_list.append((total_miss / n_class)*100)
+                    atten_percent_list.append((total_attend / n_class))
+                except:
+                    miss_percent_list.append(0)
+                    atten_percent_list.append(0)
                 assis_history_list.append(assis_history)
                 if  "name_list" not in grouped_driver_cache[name_group]:
                     student_click = waitElement(driver2, f'//*[@id="test1"]/table/tbody/tr[{student}]/td[1]/div/div[1]/a')
@@ -527,32 +625,54 @@ class SelenuimThreadLoggin(QThread):
             return cacheStudent
 
     def quitDriver(self, name):
-        driverGroup = grouped_driver_packs[name]
-        driverGroup.quit()
-        
-
+        try:
+            driverGroup = grouped_driver_packs[name]
+            driverGroup.quit()
+            del grouped_driver_packs[name]
+        except:
+            print(f'{name} is already closed!')
     
-               
-
-
-
+       
 class seleniumTakeMetricsByGroupBasic():
+    global rankData
     listRows = []
     listIdsGroup = []
     def findPoints(self, group):
             listStLowBalance= []
             n_std = group[2].split('/')
             n_std = int(n_std[0])
-            id_course = constants.id_couse_latamByTotalName[group[3]]
+            id_course = id_couse_latamByTotalName[group[3]]
             try:
-                if n_std > 0 and (constants.lesson_by_course_latam[id_course]['names'].index(group[4]) < 31):
+                if n_std > 0 and (lesson_by_course_latam[id_course]['names'].index(group[4]) < 31):
                     driver.get(f"https://backoffice.kodland.org/en/group_{group[0]}/")
+                    grupo_name = group[1]
+                    curso_name = group[3]
+                    point_available = points_total_course_latam[id_course][n_std-1]
+                    color_curso = color_cursoBycode[id_course] 
+                    df = pd.DataFrame(columns=['Nombre', 'Puesto', 'Puntaje', 'Estado', 'Balance'])
+                    st_total_range = n_std * 2
+                    for student in range(1, st_total_range, 2):
+                        table = waitElement(driver,f'{textXPathgroup["Row Student"]}[{str(student)}]').text
+                        table_balance =  waitElement(driver,f'{textXPathgroup["Row Student"]}[{str(student+1)}]').text
+                        balance = table_balance.split(sep=':')
+                        balance[1] = balance[1].split()
+                        balance = (balance[1])
+                        vp = table.split(sep='\n')
+                        extra = [vp[0],vp[-1]]
+                        two = extra[1].split()
+                        one= two[0].split(sep='/')
+                        two.pop(0)
+                        extra.pop(1)
+                        extra = extra + [int(one[0])] + [int(one[1])] + two + balance
+                        extra[2] = int(extra[2])
+                        df.loc[len(df)] = extra
+                    df_sort = df.sort_values('Puesto') 
+                    df_sort.reset_index(inplace=True, drop=True)
+                    compromiso = round((df_sort['Puntaje'].sum()/(point_available*n_std))*100)
                     empty_attendances = len(driver.find_elements(By.CLASS_NAME, "student_attendance-no-att"))
-                    print(empty_attendances)
-                    ranks = driver.find_elements(By.CLASS_NAME, "table_student-rank")
-                    n_class= waitElement(driver, constants.textXPathgroup['Lessons completed']).text.split('/')
+                    n_class= waitElement(driver, textXPathgroup['Lessons completed']).text.split('/')
                     n_class = int(n_class[0])
-                    total_Points_By_Actual_Lesson = sum(constants.points_total_course_latam[id_course][0:n_class+1])
+                    total_Points_By_Actual_Lesson = sum(points_total_course_latam[id_course][:n_class])
                     listIdStd = driver.find_elements(By.CLASS_NAME, "balance__text")
                     while listIdStd[-1].text == 'Calculating...':
                         time.sleep(0.5)
@@ -564,27 +684,36 @@ class seleniumTakeMetricsByGroupBasic():
                                 ind = 1
                             else:
                                 ind = (i+1)+((((i+1)*2)/2)-1)
-                            nameSele = driver.find_element(By.XPATH, f'//*[@id="test1"]/table/tbody/tr[{ind}]/td[1]/div/div[1]/a')
+                            nameSele = waitElement(driver, textXPathgroup["Name Student"].replace("#n_std#", str(int(ind))))
                             name_std = nameSele.text
                             href_std = nameSele.get_attribute("href")
-                            listStLowBalance.append([name_std, href_std,intBalance])   
+                            driver.execute_script(f"window.open('{href_std}', 'new_window')")
+                            driver.switch_to.window(driver.window_handles[1])
+                            phone = waitElement(driver, '/html/body/div[3]/div[2]/div/div[2]/div[2]/table/tbody/tr[3]/td/a').text
+                            listStLowBalance.append([name_std, href_std,intBalance, phone])
+                            driver.close()
+                            driver.switch_to.window(driver.window_handles[0])
                     totalPoints = total_Points_By_Actual_Lesson * n_std
-                    totalPointsByStudents = 0
-                    for element in ranks:       
-                        point = element.text.split('/')
-                        point = int(point[-1])
-                        totalPointsByStudents += point
+                    totalPointsByStudents = int(df_sort["Puntaje"].sum())
                     InstaciaADB.addEngagementToDb(group[0], (totalPointsByStudents, totalPoints-totalPointsByStudents, 'no'))
+                    rankData[grupo_name] = [total_Points_By_Actual_Lesson, df_sort, int((totalPointsByStudents/totalPoints)*100), color_curso, n_std]
                     return [listStLowBalance, [totalPointsByStudents, totalPoints-totalPointsByStudents, 'no'], empty_attendances]
                 else:
                     InstaciaADB.addEngagementToDb(group[0], (0,0,'yes'))
                     return [listStLowBalance, [0,0,'yes'], 0]
-            except:
-                InstaciaADB.addEngagementToDb(group[0], (0,0,'yes'))
-                return [listStLowBalance, [0,0,'yes'], 0]
+            except Exception as e:
+                if group[11] == "New":
+                    InstaciaADB.addEngagementToDb(group[0], (0,0,'no'))
+                    return [listStLowBalance, [0,0,'no'], 0]
+                else:
+                    InstaciaADB.addEngagementToDb(group[0], (0,0,'yes'))
+                    return [listStLowBalance, [0,0,'yes'], 0]
             
     def driverQuit(self):
         driver.quit()
+
+
+
 
 def waitElementCSS(driver, XPATH):
     return WebDriverWait(driver, 20).until(

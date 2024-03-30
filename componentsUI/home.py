@@ -1,14 +1,26 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtCore import pyqtSlot
-from componentsUI import topWindow, BottomWindow
+from componentsUI import topWindow, BottomWindow, loggin
 from src.dataBaseManager import db_manager
-from src.selenuimManager import seleniumTakeMetricsByGroupBasic
+from src.selenuimManager import seleniumTakeMetricsByGroupBasic, rankData
 from functools import partial
 from utils import stylesheetUI
-from utils.constants import imageBS64
+from utils.constants import data
+from src.gSheetActions import  GoogleSheet, generate_uid
+import datetime, json
+import tempfile
+
+
+imageBS64  = data["imageBS64"]
+href_couse_latamByTotalName = data["href_couse_latamByTotalName"]
+lesson_by_course_latam= data["lesson_by_course_latam"] 
+id_couse_latamByTotalName = data["id_couse_latamByTotalName"]
+textTemplate = data["textTemplate"]
+
 import webbrowser
 import base64
+import os
 
 
 listMetrics = []
@@ -17,34 +29,46 @@ colSpam = 0
 initTW = topWindow.TopWidget()
 initBW = BottomWindow.BottomWidget()
 instSeleMBG= seleniumTakeMetricsByGroupBasic()
+buttonContainer = {}
+buttonNew= {}
+language = "ENG"
+
 
 def bs4Process(bs4):
     image_data = base64.b64decode(bs4.split(',')[1])
     pixmap = QtGui.QPixmap()
     pixmap.loadFromData(image_data)
-
     return pixmap
 
 class Inithome(QtWidgets.QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, jsonG=None, name=None, user=None):
         super().__init__(parent)
         self.WindowMain = parent
+        self.homeSize = "min"
         self.frameY = 0
         self.stackedWidget = QtWidgets.QStackedWidget(self)
         self.stackedWidget.setGeometry(0, 30, parent.width(), parent.height() - 50)
-        self.WindowHome(parent)
-        self.homeSize = "min"
-        self.donut_thread = self.DonutThread(parent=self)
-        self.donut_thread.finished.connect(self.onDonutThreadFinished)
-        self.donut_thread.start()
+        self.jsonG = jsonG
+        status = self.WindowHome(parent, name, user)
+        if not status == 'CourseNotFound':
+            self.donut_thread = self.DonutThread(parent=self)
+            self.donut_thread.finished.connect(self.onDonutThreadFinished)
+            self.donut_thread.start()
+        else:
+            instSeleMBG.driverQuit()
+            loggin.Loggin(self.WindowMain, error='CourseNotFound')  
+             
+        
 
     class NotificationHandler(QtCore.QObject):
-        def __init__(self, vertical_layout_sidebar, labelGif, infoText, parent=None):
+        def __init__(self, vertical_layout_sidebar, labelGif, infoText, buttonCheck=None, listOrdeGroup=None, parent=None):
             super(Inithome.NotificationHandler, self).__init__(parent)
             self.verticalLayoutSidebar = vertical_layout_sidebar
             self.verticalLayoutSidebar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
             self.labelGif = labelGif
             self.infoLabelTohome = infoText
+            self.buttonCheck = buttonCheck
+            self.listOrdeGroup = listOrdeGroup
             
             self.iconWA = QtGui.QIcon(bs4Process(imageBS64['wa']))
         notification_signal = pyqtSignal(str, str, str, str, str, str, str, str)
@@ -59,61 +83,90 @@ class Inithome(QtWidgets.QWidget):
 
         def _insertNotification(self, type, href_student=None, student=None, href_group=None, group=None, engagement=None,
                             balanceStudent=None, lastElementFirstLoading=None):
+            global buttonContainer, language, buttonNew
             contentItemsNews = QtWidgets.QWidget()
             contentItemsNews.setObjectName("contentItemsNews")
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
             contentItemsNews.setSizePolicy(sizePolicy)
             vertivalLayoutNewsContainer = QtWidgets.QVBoxLayout(contentItemsNews)
-
-
-            boxToolsNotifications = QtWidgets.QComboBox()
-            boxToolsNotifications.setContentsMargins(0,0,0,0)
-            boxToolsNotifications.setSizePolicy(sizePolicy)
-            boxToolsNotifications.setMinimumHeight(20)
-
-            horizontalToolsLayout = QtWidgets.QHBoxLayout(boxToolsNotifications)
-            horizontalToolsLayout.setContentsMargins(0,0,0,0)
-            horizontalToolsLayout.addStretch(1)
-
-            infoNews = QtWidgets.QLabel()
-            if type == 'criticalGroup':
-                infoNews.setText(f'Group <a href ="{href_group}">{group}</a> has <b>{engagement} </b>engagement, reviews assignments, or encourages submission of assignments.')
-            elif type == 'lowBalanceStudent':
-                infoNews.setText(f'<a href ="{href_student}">{student}</a> has balance <b>{balanceStudent}</b>, consult parents about its continuity or send the information to ISM.')
-                openMessageWtp = QtWidgets.QPushButton()
-                sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-                openMessageWtp.setSizePolicy(sizePolicy)
-                openMessageWtp.setMinimumSize(18, 18) 
-                openMessageWtp.setIcon(self.iconWA)
-                message = f"¡Hola, hola, Aquí el tutor de {student}! 👋,\n\nActualmente ha sido emocionante todo el trabajo realizado con {student}.\nSin embargo me preocupa un poco el saldo actual de {student} el cual es de *{balanceStudent}*. Me gustaría preguntarle si ya ha tenido un contacto con el equipo de servicio al cliente o si tiene pensado agregar más clases para {student}.\n\n¡De antemano gracias por apoyar el talento de {student}! 😊"
-                openMessageWtp.clicked.connect(lambda: self.copyMessageToWA(message))
-                horizontalToolsLayout.addWidget(openMessageWtp)
-            elif type ==  'NoAtt':
-                infoNews.setText(f'Group <a href ="{href_group}">{group}</a> has <b>{engagement} </b>students without taking attendance.')
-            infoNews.setOpenExternalLinks(True)
-            infoNews.linkActivated.connect(self.open_external_link)
-
-            infoNews.setObjectName("infoNews")
-            infoNews.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify)
-            infoNews.setWordWrap(True)
-            vertivalLayoutNewsContainer.addWidget(infoNews)
-
-            checkNotification = QtWidgets.QPushButton()
-            checkNotification.setContentsMargins(0,0,0,0)
-            checkNotification.setStyleSheet("padding: 0;")
-            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-            checkNotification.setSizePolicy(sizePolicy)
-            checkNotification.setMinimumSize(40, 20) 
-            checkNotification.setText('Done')
-            checkNotification.clicked.connect(lambda: self.eliminar_widget(contentItemsNews))
-            horizontalToolsLayout.addWidget(checkNotification)
             
-            vertivalLayoutNewsContainer.addWidget(boxToolsNotifications)
-            self.verticalLayoutSidebar.addWidget(contentItemsNews)
 
-            if lastElementFirstLoading == "yes":
-                self.labelGif.deleteLater()
-                self.infoLabelTohome.deleteLater()
+            if type == 'ActivateButton'  or lastElementFirstLoading == "yes":
+                if lastElementFirstLoading == "yes":
+                    self.labelGif.deleteLater()
+                    self.infoLabelTohome.deleteLater()
+                    self.buttonCheck.setCursor(QtCore.Qt.PointingHandCursor)
+                    self.buttonCheck.setEnabled(True)
+                    self.listOrdeGroup.setEnabled(True)
+                    self.listOrdeGroup.setCurrentIndex(2)
+                elif str(href_group) in buttonContainer:
+                    for button in buttonContainer[href_group]:
+                        try:                    
+                            if not button.isEnabled():
+                                button.setEnabled(True)
+                        except Exception as e:
+                            print(e)
+            elif type == 'DelButton':
+                for button in buttonContainer[href_group]:
+                    try:                    
+                        button.setEnabled(False)
+                        button.setVisible(False)
+                    except Exception as e:
+                        print(e)
+                        
+            else:
+                boxToolsNotifications = QtWidgets.QComboBox()
+                boxToolsNotifications.setContentsMargins(0,0,0,0)
+                boxToolsNotifications.setSizePolicy(sizePolicy)
+                boxToolsNotifications.setMinimumHeight(20)
+
+                horizontalToolsLayout = QtWidgets.QHBoxLayout(boxToolsNotifications)
+                horizontalToolsLayout.setContentsMargins(0,0,0,0)
+                horizontalToolsLayout.addStretch(1)
+
+                infoNews = QtWidgets.QLabel()
+                if type == 'criticalGroup':
+                    infoNews.setText(f"{textTemplate[language]['infoNewsCG'].replace('#href_group#', href_group).replace('#group#', group).replace('#engagement#', engagement)}")
+                elif type == 'lowBalanceStudent':
+                    infoNews.setText(f"{textTemplate[language]['infoNewsLB'].replace('#href_student#', href_student).replace('#student#', student).replace('#balanceStudent#', balanceStudent)}")
+                    openMessageWtp = QtWidgets.QPushButton()
+                    sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+                    openMessageWtp.setSizePolicy(sizePolicy)
+                    openMessageWtp.setMinimumSize(18, 18) 
+                    openMessageWtp.setIcon(self.iconWA)
+                    openMessageWtp.setCursor(QtCore.Qt.PointingHandCursor)
+                    openMessageWtp.setToolTip("Copy message to WA")
+                    message = textTemplate[language]['templateWaBalanceLow'].replace('#student#', student).replace('#balance#', balanceStudent)
+                    messageToWa = message.replace("\n", "%0A").replace(" ", "%20")
+                    phone = href_group
+                    openMessageWtp.clicked.connect(lambda: self.openLinkWaLowBalance(messageToWa, phone))
+                    horizontalToolsLayout.addWidget(openMessageWtp)
+                elif type ==  'NoAtt':
+                    infoNews.setText(f"{textTemplate[language]['infoNewsNA'].replace('#href_group#', href_group).replace('#group#', group).replace('#engagement#', engagement)}")
+                infoNews.setOpenExternalLinks(True)
+                infoNews.linkActivated.connect(self.open_external_link)
+
+                infoNews.setObjectName("infoNews")
+                infoNews.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify)
+                infoNews.setWordWrap(True)
+                vertivalLayoutNewsContainer.addWidget(infoNews)
+
+                checkNotification = QtWidgets.QPushButton()
+                checkNotification.setContentsMargins(0,0,0,0)
+                checkNotification.setStyleSheet("padding: 0;")
+                sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+                checkNotification.setSizePolicy(sizePolicy)
+                checkNotification.setMinimumSize(40, 20) 
+                checkNotification.setText('Done')
+                checkNotification.setCursor(QtCore.Qt.PointingHandCursor)
+                checkNotification.clicked.connect(lambda: self.eliminar_widget(contentItemsNews))
+                horizontalToolsLayout.addWidget(checkNotification)
+                
+                vertivalLayoutNewsContainer.addWidget(boxToolsNotifications)
+                self.verticalLayoutSidebar.addWidget(contentItemsNews)
+        def openLinkWaLowBalance(self, message, phone):
+            link = "https://api.whatsapp.com/send/?phone="+phone+"&text="+message+"&type=phone_number&app_absent=0"
+            webbrowser.open_new(str(link))
 
         def eliminar_widget(self, widget):
                 widget.deleteLater()
@@ -121,11 +174,10 @@ class Inithome(QtWidgets.QWidget):
         def open_external_link(self, url):
             QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
 
-        def copyMessageToWA(self, message):
+        def copyMessageToWA(self, message):  
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(message)
-
-
+    
 
     class DonutThread(QThread):
         finished = pyqtSignal()
@@ -141,11 +193,27 @@ class Inithome(QtWidgets.QWidget):
         self._translate = QtCore.QCoreApplication.translate
         parent.setWindowTitle(self._translate("MainWindow", "MainWindow"))
         self.userImg.setText(self._translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/user (1).png\"/></p></body></html>"))
-        self.tutorName.setText(self._translate("MainWindow", "$TutorName"))
         self.Group.setText(self._translate("MainWindow", "Groups"))
 
-    def WindowHome(self, parent):    
-        self.setObjectName("centralwidgetHome")
+    def hideGraduatesGroup(self, state):
+        if state == 2:
+            for box in self.graduateBox:
+                box.setVisible(True)
+        else:
+            for box in self.graduateBox:
+                box.setVisible(False)
+            
+    def listOrdeGroupChange(self, text):
+        if text == "ID":
+            self.MakeGrid(orderBy="ID")
+        elif text == "Engagement":
+            self.MakeGrid(orderBy="Engagement")
+        else:
+            self.MakeGrid(orderBy="Nearest Class") 
+
+
+    def WindowHome(self, parent, name, user):    
+        self.setObjectName("centralwidgetHome)")
         
         self.homeWidget = QtWidgets.QWidget()
         self.homeWidget.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
@@ -156,9 +224,63 @@ class Inithome(QtWidgets.QWidget):
         self.verticalLayoutMain.setContentsMargins(0, 0,0, 0)
         self.verticalLayoutMain.setSpacing(0)
         self.verticalLayoutMain.setObjectName("verticalLayout")
+        font = QtGui.QFont()
+        font.setFamily("DejaVu Sans")
+        font.setPointSize(8)
+
+       
+        """SIDE BAR"""
+
+        self.sidebar_visible = False
         
 
-        initTW.CreateTopWidgetTitle(self.verticalLayoutMain, parent)
+        self.sidebar = QtWidgets.QFrame(self)
+        self.sidebar.setGeometry(860, 30, 230, self.WindowMain.height())
+        self.sidebar.setContentsMargins(0,0,0,0)
+        self.sidebar.raise_()
+
+        self.toggle_button = QtWidgets.QPushButton(self.sidebar)
+        icon = QtGui.QIcon(bs4Process(imageBS64["left"]))
+        self.toggle_button.setIcon(icon)
+        self.toggle_button.setGeometry(3,20, 30,30)
+        self.toggle_button.clicked.connect(self.toggle_sidebar)
+        self.toggle_button.setObjectName("toggle_button")
+        
+
+        self.labeNotificationAdviser = QtWidgets.QLabel(self.toggle_button)
+        self.labeNotificationAdviser.setText('!')
+        self.labeNotificationAdviser.setGeometry(30,-5,10,10)
+
+
+        self.animation = QtCore.QPropertyAnimation(self.sidebar, b"pos")
+        self.animation.setDuration(300)
+        self.animation.setEasingCurve(QtCore.QEasingCurve.Linear)
+
+       
+
+        self.sidebarChild = QtWidgets.QFrame(self.sidebar)
+        self.sidebarChild.setGeometry(24, 0, 200,  self.WindowMain.height())
+        self.sidebarChild.setObjectName("sidebarChild")
+        self.verticalLayoutSidebar = QtWidgets.QVBoxLayout(self.sidebarChild)
+        self.verticalLayoutSidebar.setContentsMargins(14,14,14,14)
+        
+        self.titleSideBar = QtWidgets.QLabel()
+        self.titleSideBar.setText("Notifications")
+        self.titleSideBar.setFont(font)
+        self.titleSideBar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.titleSideBar.setMaximumHeight(40)
+
+        self.scroll_areaSide = QtWidgets.QScrollArea(self.sidebarChild)
+        self.scroll_areaSide.setGeometry(-2, 30, 200, self.WindowMain.height()-75)
+        self.scroll_areaSide.setWidgetResizable(True)
+        self.inner_widget = QtWidgets.QWidget(self.scroll_areaSide)
+        self.scroll_areaSide.setWidget(self.inner_widget)
+        self.inner_layout = QtWidgets.QVBoxLayout(self.inner_widget)
+
+        self.verticalLayoutSidebar.addWidget(self.titleSideBar)
+        self.verticalLayoutSidebar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignHCenter)
+        initTW.CreateTopWidgetTitle(self.verticalLayoutMain, parent,  self.sidebarChild,self.scroll_areaSide)
+
 
         #BODY ALL
         
@@ -221,19 +343,32 @@ class Inithome(QtWidgets.QWidget):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tutorName.sizePolicy().hasHeightForWidth())
         self.tutorName.setSizePolicy(sizePolicy)
+        self.tutorName.setText(user)
         self.tutorName.setObjectName("tutorName")
+
+        json_data = json.dumps(self.jsonG)
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
+            temp_file.write(json_data)
+            temp_filename = temp_file.name
+        sheet = GoogleSheet(temp_filename, 'Asistutor DB', 'INCOME PER TUTOR')
+        uiid = generate_uid()
+        date = datetime.date.today()
+        date_str = date.strftime("%Y-%m-%d")
+        value =[[date_str, user, name, uiid]]
+        range = sheet.get_last_row_range()
+        sheet.write_data(value, range)
+        os.unlink(temp_filename)
+
 
 
         self.verticalLayout.addWidget(self.tutorName, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
         spacerItem1 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem1)
         
-        #BUTTON TO VIEW GROUP
+        #BUTTON TO VIEW GROUP'
         self.Group = QtWidgets.QPushButton(self.menu)
         self.Group.animateClick(100)
-        font = QtGui.QFont()
-        font.setFamily("DejaVu Sans")
-        font.setPointSize(8)
+        
         self.Group.setFont(font)
         self.Group.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.Group.setCheckable(True)
@@ -264,8 +399,10 @@ class Inithome(QtWidgets.QWidget):
         self.buttonGridGenerator = QtWidgets.QPushButton()
         icon = QtGui.QIcon(bs4Process(imageBS64["layout"]))
         self.buttonGridGenerator.setIcon(icon)
+        self.buttonGridGenerator. setVisible(False)
         self.buttonGridGeneratorOn = False  
         self.buttonTableGeneratorOn = True
+        
 
         
         self.buttonGridGenerator.clicked.connect(lambda : self.MakeGrid())
@@ -273,12 +410,15 @@ class Inithome(QtWidgets.QWidget):
         self.buttonGridGenerator.setObjectName("ButtonTable")
         self.buttonTableGenerator = QtWidgets.QPushButton()
         self.buttonTableGenerator.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        ####################################################
+        self.buttonTableGenerator.setVisible(False)
+        ###################################################
         icon = QtGui.QIcon(bs4Process(imageBS64["more"]))
         self.buttonTableGenerator.setIcon(icon)
         self.buttonTableGenerator.clicked.connect(self.MakeTable)    
         self.buttonTableGenerator.setObjectName("ButtonGrid")
-
-        movie = QtGui.QMovie(imageBS64["rolling"])
+        ruta_gif = os.path.join(os.path.dirname(__file__), '..', 'rolling.gif')
+        movie = QtGui.QMovie(ruta_gif)
         self.labelGif = QtWidgets.QLabel()
         self.labelGif.setMinimumSize(30,30)
         self.labelGif.setMovie(movie)
@@ -303,23 +443,35 @@ class Inithome(QtWidgets.QWidget):
 
         self.infolistOrdeGroupContainer = QtWidgets.QHBoxLayout()
 
+        self.labelCheckGraduate = QtWidgets.QLabel()
+        self.labelCheckGraduate.setText("Graduates")
+        self.inputCheckGraduate = QtWidgets.QCheckBox()
+        self.inputCheckGraduate.setChecked(True)
+        self.inputCheckGraduate.setEnabled(False)
+        self.inputCheckGraduate.setCursor(QtCore.Qt.ForbiddenCursor)
+        self.inputCheckGraduate.stateChanged.connect(self.hideGraduatesGroup)
+
         self.infolistOrdeGroup = QtWidgets.QLabel()
         self.infolistOrdeGroup.setText("sort by: ")
         self.infolistOrdeGroup.setObjectName("infolistOrdeGroup")
         self.listOrdeGroup = QtWidgets.QComboBox()
         self.listOrdeGroup.setObjectName("ComboBoxSortBy")
+        self.listOrdeGroup.setEnabled(False)
 
-        # Agregar opciones al QComboBox
         self.listOrdeGroup.addItem("ID")
         self.listOrdeGroup.addItem("Engagement")
         self.listOrdeGroup.addItem("Nearest Class") 
-
+        self.listOrdeGroup.currentTextChanged.connect(self.listOrdeGroupChange)
+        
+        self.infolistOrdeGroupContainer.addWidget(self.labelCheckGraduate)
+        self.infolistOrdeGroupContainer.addWidget(self.inputCheckGraduate)   
         self.infolistOrdeGroupContainer.addWidget(self.infolistOrdeGroup)
         self.infolistOrdeGroupContainer.addWidget(self.listOrdeGroup)
 
-
+        #################################################################################
         self.horizaontalLayoutheaderHome.addLayout(self.infolistOrdeGroupContainer)
-
+        
+        ##########################################################################################
 
         self.scroll_area = QtWidgets.QScrollArea(self.homeContainer)
         self.scroll_area.setWidgetResizable(True)
@@ -337,71 +489,26 @@ class Inithome(QtWidgets.QWidget):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.setHorizontalSpacing(0)
-        self.gridLayout.setVerticalSpacing(0)
+        self.gridLayout.setVerticalSpacing(4)
+        self.gridLayout.setAlignment(QtCore.Qt.AlignTop)
+        self.gridLayout.setRowMinimumHeight(0, 80)
         self.scroll_area.setWidget(self.scrollContent)
         self.layout.addWidget(self.scroll_area)
 
         self.horizontalLayout_4.addWidget(self.homeContainer, 0)
         self.horizontalLayout.addWidget(self.body)
-        self.MakeGrid()
+        textReturn = self.MakeGrid()
+        if textReturn == "CourseNotFound":
+            return 'CourseNotFound'
         initBW.CreateBottomWidgetFooter(self.verticalLayoutMain, parent)
 
         parent.setCentralWidget(self)
 
-        """SIDE BAR"""
-
-        self.sidebar_visible = False
-        
-
-        self.sidebar = QtWidgets.QFrame(self)
-        self.sidebar.setGeometry(860, 30, 230, 510)
-        self.sidebar.setContentsMargins(0,0,0,0)
-        self.sidebar.raise_()
-
-        self.toggle_button = QtWidgets.QPushButton(self.sidebar)
-        icon = QtGui.QIcon(bs4Process(imageBS64["left"]))
-        self.toggle_button.setIcon(icon)
-        self.toggle_button.setGeometry(3,20, 30,30)
-        self.toggle_button.clicked.connect(self.toggle_sidebar)
-        self.toggle_button.setObjectName("toggle_button")
-
-        self.labeNotificationAdviser = QtWidgets.QLabel(self.toggle_button)
-        self.labeNotificationAdviser.setText('!')
-        self.labeNotificationAdviser.setGeometry(30,-5,10,10)
-
-
-        self.animation = QtCore.QPropertyAnimation(self.sidebar, b"pos")
-        self.animation.setDuration(300)
-        self.animation.setEasingCurve(QtCore.QEasingCurve.Linear)
-
-       
-
-        self.sidebarChild = QtWidgets.QFrame(self.sidebar)
-        sidebar_geometry = self.sidebar.geometry() 
-        self.sidebarChild.setGeometry(24, 0, 200, sidebar_geometry.height())
-        self.sidebarChild.setObjectName("sidebarChild")
-        self.verticalLayoutSidebar = QtWidgets.QVBoxLayout(self.sidebarChild)
-        self.verticalLayoutSidebar.setContentsMargins(14,14,14,14)
-        
-        self.titleSideBar = QtWidgets.QLabel()
-        self.titleSideBar.setText("Notifications")
-        self.titleSideBar.setFont(font)
-        self.titleSideBar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.titleSideBar.setMaximumHeight(40)
-
-        self.scroll_areaSide = QtWidgets.QScrollArea(self.sidebarChild)
-        self.scroll_areaSide.setGeometry(-2, 30, 200, sidebar_geometry.height()-30)
-        self.scroll_areaSide.setWidgetResizable(True)
-        self.inner_widget = QtWidgets.QWidget(self.scroll_areaSide)
-        self.scroll_areaSide.setWidget(self.inner_widget)
-        self.inner_layout = QtWidgets.QVBoxLayout(self.inner_widget)
-
-        self.verticalLayoutSidebar.addWidget(self.titleSideBar)
-        self.verticalLayoutSidebar.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop | QtCore.Qt.AlignmentFlag.AlignHCenter)
-        self.notification_handler = Inithome.NotificationHandler(self.inner_layout, self.labelGif, self.loadingHomerTopInfo)
-        self.notification_handler.notification_signal.connect(self.notification_handler._insertNotification)
         self.retranslateUi(parent)
         QtCore.QMetaObject.connectSlotsByName(parent)
+        self.notification_handler = Inithome.NotificationHandler(self.inner_layout, self.labelGif, self.loadingHomerTopInfo, self.inputCheckGraduate, self.listOrdeGroup)
+        self.notification_handler.notification_signal.connect(self.notification_handler._insertNotification)
+
                     
     def toggle_sidebar(self):
         if self.sidebar_visible:
@@ -427,8 +534,62 @@ class Inithome(QtWidgets.QWidget):
             shadow.setOffset(6, 6)
             widget.setGraphicsEffect(shadow)
 
-    def MakeGrid(self):
-        if self.buttonTableGeneratorOn :
+    def open_external_link(self, url):
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
+
+    def ranking_generator_init(self, nameGroup, last_lesson=None):
+            contenido = []
+            point_available = rankData[nameGroup][0]
+            df_sort = rankData[nameGroup][1]
+            compromiso = rankData[nameGroup][2]
+            color_curso = rankData[nameGroup][3]
+            st_total = rankData[nameGroup][4]
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            template = os.path.join(parent_dir, r"assets\template-rank-metrics", "template.html")
+            with open(template, "r", encoding='utf-8') as template:
+                    for linea in template:
+                        columnas = linea.split(';')
+                        contenido.append(';'.join(columnas)+'\n')
+            ll_index = contenido.index('                    <h1 class="last_lesson"></h1>\n\n')
+            Color_index = contenido.index('        --color_theme: var(--Orange)\n\n')
+            pa_index = contenido.index('                    <h1 class="point_ava"></h1>\n\n')
+            cc_index = contenido.index('                    <h1 class="compromiso"></h1>\n\n')
+            name_course_index =contenido.index('                <h2>Python Programming Language</h2>\n\n')
+            contenido[ll_index] = f'                    <h1 class="last_lesson">{last_lesson}</h1>\n\n'
+            contenido[pa_index] = f'                    <h1 class="point_ava">{str(point_available)}</h1>\n\n'
+            contenido[cc_index] = f'                    <h1 class="compromiso">{str(compromiso)}%</h1>\n\n'
+            contenido[Color_index] = f'        --color_theme: var(--{color_curso})\n\n'
+            contenido[name_course_index] = f'                <h2>{nameGroup}</h2>\n\n'
+
+            #Modificamos el body de la plantilla
+            n_index = contenido.index('        <tr class="datos_ranking">\n\n')
+            principal_contend = contenido[0:n_index]
+            secundary_contend = contenido[n_index+5:-1]
+            middle_contend = []
+            for student in range(int(st_total)):
+                perfect = 'nada'
+                if df_sort.iloc[student,2] >= point_available:
+                    perfect = 'perfect'
+                name = df_sort.iloc[student,0]
+                name = name.lstrip("-")
+                name = name.lstrip()
+                middle_contend.append('        <tr class="datos_ranking student'+str(df_sort.iloc[student,1])+'">\n\n')
+                middle_contend.append('            <td>'+str(df_sort.iloc[student,1])+'<span></span></td>\n\n')
+                middle_contend.append('            <td>'+name+'</td>\n\n') 
+                middle_contend.append('            <td><div class="container_puntos"><p>'+str(df_sort.iloc[student,2])+'</p></div><meter min="0" max="100" low="32" high="75" optimum="100" value="'+str((int(df_sort.iloc[student,2])/int(point_available))*100)+'"></meter><div class="contain_perfet"><div class="'+perfect+'"> </div></div> </td>\n\n')
+                middle_contend.append('        </tr>\n\n')
+            table_ranking = principal_contend + middle_contend + secundary_contend
+            templateRanking = os.path.join(parent_dir, r"assets\template-rank-metrics", "temporal_ranking.html")
+            with open(templateRanking, 'w', encoding='utf-8') as archivo:
+                archivo.writelines(table_ranking)
+            url = os.path.abspath(templateRanking)
+            webbrowser.open(url)
+
+    def MakeGrid(self, graduateOnOff=False, orderBy=None) :
+        global buttonContainer
+        self.graduateBox = []
+        if self.buttonTableGeneratorOn or graduateOnOff or orderBy: 
             self.buttonGridGeneratorOn = True
             self.buttonTableGeneratorOn = False
             
@@ -454,9 +615,17 @@ class Inithome(QtWidgets.QWidget):
         _translate = QtCore.QCoreApplication.translate
         self.listMetrics = []
 
-        
         self.n_group_list = db_manager().putGroupAtHome()
-
+        if orderBy == "ID":
+            group_list_orderById = db_manager().getNoGraduatedGroupsByID()
+            self.n_group_list[:len(group_list_orderById)] = group_list_orderById
+        elif orderBy == "Engagement":
+            group_list_orderByEngagement = db_manager().getNoGraduatedGroupsByEngagement()
+            self.n_group_list[:len(group_list_orderByEngagement)] = group_list_orderByEngagement
+        elif orderBy == "Nearest Class":
+            group_list_orderByNearestClass = db_manager().getNoGraduatedGroupsByNearestClass()
+            self.n_group_list[:len(group_list_orderByNearestClass)] = group_list_orderByNearestClass
+         
         for group in range(len(self.n_group_list)):
             div = (group)//colTarget
             rowW = 0
@@ -465,15 +634,21 @@ class Inithome(QtWidgets.QWidget):
                 rowW = div
                 colW = group-(div*colTarget)
 
-            groupContainer = QtWidgets.QGroupBox()
+            groupContainer = QtWidgets.QGroupBox()         
 
             groupContainer.setAutoFillBackground(False)
             groupContainer.setMinimumSize(190,170)
+            groupContainer.setMaximumHeight(160)
             groupContainer.setTitle("")
             groupContainer.setFlat(False)
             groupContainer.setCheckable(False)
             groupContainer.setContentsMargins(0,0,0,0)
             groupContainer.setObjectName("groupContainer")
+            
+
+
+            ####
+           
             
             verticalLayout = QtWidgets.QVBoxLayout(groupContainer)
             verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -496,33 +671,39 @@ class Inithome(QtWidgets.QWidget):
             nameGroupContainer = QtWidgets.QHBoxLayout(nameGroup)
             nameGroupContainer.setContentsMargins(0,0,4,0)
 
-            nameGroupText = ClickableLabel()
+            nameGroupText = QtWidgets.QLabel()
             nameGroupText.setObjectName("nameGroupText")
             nameGroupText.setOpenExternalLinks(True)
             nameGroupText.setText(f"<a href='https://backoffice.kodland.org/en/group_{self.n_group_list[group][0]}/'>{self.n_group_list[group][1]}</a>")
             nameGroupContainer.addWidget(nameGroupText)
-            nameGroupText.link_clicked.connect(self.abrir_archivo)
-
+            nameGroupText.linkActivated.connect(self.open_external_link)
+           
             labelStatus = QtWidgets.QLabel()
             labelStatus.setFont(font)
             if  self.n_group_list[group][11] == 'NULL':
                 labelStatus.setText("-")
                 labelStatus.setStyleSheet("color: white")
             else:
+                
                 labelStatus.setText(self.n_group_list[group][11])
-                if self.n_group_list[group][11] == "Graduate":
-                    labelStatus.setStyleSheet("background-color: #989c99")    
-                if self.n_group_list[group][11] == "Perfect":
+                if self.n_group_list[group][11] == "New":
+                    labelStatus.setStyleSheet("background-color: #4287f5")  
+                elif self.n_group_list[group][11] == "Graduate":
+                    labelStatus.setStyleSheet("background-color: #989c99")  
+                    self.graduateBox.append(groupContainer)  
+                    if not self.inputCheckGraduate.isChecked():
+                        groupContainer.setVisible(False)
+                elif self.n_group_list[group][11] == "Perfect":
                     labelStatus.setStyleSheet("background-color:#4314a3; color: white")            
-                if self.n_group_list[group][11] == "High":
+                elif self.n_group_list[group][11] == "High":
                     labelStatus.setStyleSheet("background-color:#14a33a")       
-                if self.n_group_list[group][11] == "Good":
+                elif self.n_group_list[group][11] == "Good":
                     labelStatus.setStyleSheet("background-color:#25d654")          
-                if self.n_group_list[group][11] == "Regular":
+                elif self.n_group_list[group][11] == "Regular":
                     labelStatus.setStyleSheet("background-color: #ffc547")         
-                if self.n_group_list[group][11] == "Low":
+                elif self.n_group_list[group][11] == "Low":
                     labelStatus.setStyleSheet("background-color:#ff8901")          
-                if self.n_group_list[group][11] == "Bad":
+                elif self.n_group_list[group][11] == "Bad":
                     labelStatus.setStyleSheet("background-color:#ff2b2a")    
                 elif self.n_group_list[group][11] == "Critical":
                     labelStatus.setStyleSheet("background-color:#ff2b2a; color: white")                         
@@ -562,10 +743,11 @@ class Inithome(QtWidgets.QWidget):
             LayoutVDonutContainer.setContentsMargins(0,0,0,0)
             LayoutVDonutContainer.setSizeConstraint(0)
             LayoutVDonutContainer.setSpacing(2)    
-
+            poduim = False
             if self.n_group_list[group][7] == 'undefine' or self.n_group_list[group][8] == 'undefine' : 
                 self.widget = DonutChartWidget(100,0, True, False)
             else:
+                poduim = True
                 if self.n_group_list[group][9] == 'yes':
                     self.widget = DonutChartWidget(self.n_group_list[group][7],self.n_group_list[group][8], False, True)
                 else:
@@ -635,8 +817,19 @@ class Inithome(QtWidgets.QWidget):
             columnDescriptionGroupContainer.addWidget(labelCourseName)
 
             LabelCourseNameArg = QtWidgets.QLabel()
-            LabelCourseNameArg.setText(_translate("MainWindow",f"<a href='http://www.google.com'> {self.n_group_list[group][3][0:10]}...</a>"))
-            LabelCourseNameArg.linkActivated.connect(self.abrir_archivo)
+            course = self.n_group_list[group][3]
+            id_group = self.n_group_list[group][0]
+            try:
+                href =  href_couse_latamByTotalName[self.n_group_list[group][3]]
+            except:
+                href = None
+            if href != None:
+                LabelCourseNameArg.setText(_translate("MainWindow",f"<a href='{href}'> {self.n_group_list[group][3][0:10]}...</a>"))
+                LabelCourseNameArg.linkActivated.connect(self.open_external_link)
+                LabelCourseNameArg.setToolTip(_translate("MainWindow",f"{self.n_group_list[group][3][0:10]}"))
+            else:
+                LabelCourseNameArg.setText(_translate("MainWindow",f"{self.n_group_list[group][3][0:10]}..."))
+                LabelCourseNameArg.setToolTip(_translate("MainWindow",f"{self.n_group_list[group][3][0:10]}"))
             LabelCourseNameArg.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
             LabelCourseNameArg.setMinimumWidth(50)
             LabelCourseNameArg.setAlignment(QtCore.Qt.AlignLeft)
@@ -655,9 +848,18 @@ class Inithome(QtWidgets.QWidget):
             labelNextClassArg = QtWidgets.QLabel()
             labelNextClassArg.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
             labelNextClassArg.setMinimumWidth(50)
-            labelNextClassArg.setText(_translate("MainWindow",f"<a href='http://www.google.com'> {self.n_group_list[group][4][0:10]}...</a>"))
             labelNextClassArg.setFont(font)
-            labelNextClassArg.linkActivated.connect(self.abrir_archivo)
+            labelNextClassArg.setWordWrap(True)
+            lastLesson =  self.n_group_list[group][4]
+            if course in id_couse_latamByTotalName:
+                code = id_couse_latamByTotalName[course]
+                lessonHerfInd =  lesson_by_course_latam[code]['names'].index(lastLesson)
+                lessonHerf =  lesson_by_course_latam[code]['ref'][lessonHerfInd]
+                labelNextClassArg.setText(_translate("MainWindow",f"<a href='{lessonHerf}'> {self.n_group_list[group][4][0:10]}</a>"))
+                labelNextClassArg.setToolTip(_translate("MainWindow",f"{self.n_group_list[group][4]}"))
+            else:
+                return('CourseNotFound')
+            labelNextClassArg.linkActivated.connect(self.open_external_link)
             labelNextClassArg.setObjectName("LabelInforGroup")
             columnArgGroupContainer.addWidget(labelNextClassArg)
 
@@ -693,32 +895,64 @@ class Inithome(QtWidgets.QWidget):
             buttonMetricsLayout = QtWidgets.QHBoxLayout()
             buttonMetricsLayout.setSpacing(2)
             buttonMetricsLayout.setContentsMargins(0,0,0,0)
+            buttonMetricsLayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
             buttonMetricsLayout.setSizeConstraint(0)
+            stretch = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+            buttonMetricsLayout.addItem(stretch)
 
-            ButtonRecord = QtWidgets.QPushButton()
-            ButtonRecord.setContentsMargins(0,0,0,0)
-            ButtonRecord.setObjectName("ButtonMetrics")
-            icon = QtGui.QIcon(bs4Process(imageBS64["record"]))
-            ButtonRecord.setIcon(icon)
-            ButtonRecord.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            buttonMetricsLayout.addWidget(ButtonRecord)
-            
-            ButtonAnalytics = QtWidgets.QPushButton()
-            ButtonAnalytics.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon(bs4Process(imageBS64["money"]))
-            ButtonAnalytics.setIcon(icon)
-            ButtonAnalytics.setObjectName("ButtonMetrics")
-            buttonMetricsLayout.addWidget(ButtonAnalytics)
-            ButtonAnalytics.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            ButtonAnalytics.clicked.connect(partial(initBW.AddButtonFrameGroup, self.WindowMain, self.n_group_list[group][1], self.stackedWidget, self.n_group_list[group][0], self.n_group_list[group][2], self.n_group_list[group][3], self.n_group_list[group][4], self.n_group_list[group][5]))
-            
-            ButtonPoduin = QtWidgets.QPushButton()
-            ButtonPoduin.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon(bs4Process(imageBS64["poduim2"]))
-            ButtonPoduin.setIcon(icon)
-            ButtonPoduin.setObjectName("ButtonMetrics")
-            ButtonPoduin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            buttonMetricsLayout.addWidget(ButtonPoduin)
+            if self.n_group_list[group][11] != "New":
+                ButtonRecord = QtWidgets.QPushButton()
+                ButtonRecord.setContentsMargins(0,0,0,0)
+                ButtonRecord.setFixedSize(25,25)
+                ButtonRecord.setObjectName("ButtonMetrics")
+                icon = QtGui.QIcon(bs4Process(imageBS64["record"]))
+                ButtonRecord.setIcon(icon)
+                ButtonRecord.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                buttonMetricsLayout.addWidget(ButtonRecord)
+                
+                ButtonAnalytics = QtWidgets.QPushButton()
+                ButtonAnalytics.setContentsMargins(0,0,0,0)
+                ButtonAnalytics.setFixedSize(25,25)
+                icon = QtGui.QIcon(bs4Process(imageBS64["money"]))
+                ButtonAnalytics.setIcon(icon)
+                ButtonAnalytics.setObjectName("ButtonMetrics")
+                buttonMetricsLayout.addWidget(ButtonAnalytics)
+                ButtonAnalytics.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                ButtonAnalytics.clicked.connect(partial(initBW.AddButtonFrameGroup, self.WindowMain, self.n_group_list[group][1], self.stackedWidget, self.n_group_list[group][0], self.n_group_list[group][2], self.n_group_list[group][3], self.n_group_list[group][4], self.n_group_list[group][5]))
+                
+                ButtonPoduin = QtWidgets.QPushButton()
+                ButtonPoduin.setContentsMargins(0,0,0,0)
+                ButtonPoduin.setFixedSize(25,25)
+                icon = QtGui.QIcon(bs4Process(imageBS64["poduim2"]))
+                ButtonPoduin.setIcon(icon)
+                ButtonPoduin.setObjectName("ButtonMetrics")
+                ButtonPoduin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                buttonUpdate = QtWidgets.QPushButton()
+                iconUpdate = QtGui.QIcon(bs4Process(imageBS64['update']))
+                buttonUpdate.setIcon(iconUpdate)
+                buttonUpdate.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                buttonUpdate.move(20, 130)
+                buttonUpdate.setObjectName("buttonUpdate")
+                buttonUpdate.setFixedSize(20,20)
+                buttonUpdate.raise_()
+                if (str(id_group) in buttonContainer) or poduim:
+                    ButtonPoduin.setEnabled(True)
+                    buttonUpdate.setEnabled(True)
+                    buttonContainer[str(id_group)] = []
+                    buttonContainer[str(id_group)].append(ButtonPoduin)
+                    buttonContainer[str(id_group)].append(buttonUpdate)
+                else:
+                    ButtonPoduin.setEnabled(False)
+                    buttonUpdate.setEnabled(False)
+                    buttonContainer[str(id_group)] = []
+                    buttonContainer[str(id_group)].append(buttonUpdate)
+                    buttonContainer[str(id_group)].append(ButtonPoduin)
+
+                if self.n_group_list[group][11] != "Graduate":
+                    buttonMetricsLayout.addWidget(ButtonPoduin)
+                    buttonUpdate.setParent(groupContainer)
+                ButtonPoduin.clicked.connect(partial(self.ranking_generator_init, self.n_group_list[group][1], self.n_group_list[group][4]))
+
 
             spacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
             LayoutVMainInfoGroupContainer.addItem(spacerItem)
@@ -732,21 +966,46 @@ class Inithome(QtWidgets.QWidget):
             self.listMetrics.append([LayoutVDonutContainer, self.widget, labelStatus])
 
     def onDonutThreadFinished(self):
-        print("Donut Thread Finished")
         instSeleMBG.driverQuit()
 
     def putMetricDonut(self):
-        
         for n,group in enumerate(self.n_group_list): 
             listData = instSeleMBG.findPoints(group)
             listaLowBalance = listData[0]
             rows=listData[1]
             attNO = listData[2] - 1
-            self.changeDataDonut(rows, n, group[0], attNO)
-            self.putNewsSideBar(listaLowBalance, n, )
+            isGraduate = self.changeDataDonut(rows, n, group[0], attNO)
+            self.putNewsSideBar(listaLowBalance, n)
+            if not isGraduate:
+                self.notification_handler.notification_signal.emit( 'ActivateButton',
+                                                                    None,
+                                                                    None,
+                                                                    str(group[0]),
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    "no")
+            else:
+                self.notification_handler.notification_signal.emit( 'DelButton',
+                                                                    None,
+                                                                    None,
+                                                                    str(group[0]),
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    "no")
+            if n  == len(self.n_group_list) - 1:
+                self.notification_handler.notification_signal.emit( None,
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    None,
+                                                                    "yes")
         
 
-    def changeDataDonut(self,rows,n, id, noAtt):
+    def changeDataDonut(self,rows,n, id, noAtt, last_group="no"):
             if noAtt  > 0:
                 self.notification_handler.notification_signal.emit('NoAtt',
                                                                     None,
@@ -759,7 +1018,14 @@ class Inithome(QtWidgets.QWidget):
             if rows[2] == 'yes':
                 self.listMetrics[n][2].setText("Graduate")
                 self.listMetrics[n][2].setStyleSheet("background-color: #989c99")
+                buttonContainer[self.listMetrics[n][0]] = "Graduate"
                 db_manager().addEngagementStatusToDB(id,[0, 'Graduate'] )
+                return True
+            elif rows[2] == 'no' and self.n_group_list[n][11] == "New":
+                self.listMetrics[n][2].setText("New")
+                self.listMetrics[n][2].setStyleSheet("background-color:#4287f5; color: white")
+                db_manager().addEngagementStatusToDB(id,[0, 'New'] )
+
             else:
                 self.listMetrics[n][1].update_values(rows[0], rows[1], False, False)
                 pointPer100 = (rows[0] / (rows[1] + rows[0])) * 100
@@ -816,29 +1082,22 @@ class Inithome(QtWidgets.QWidget):
                     self.listMetrics[n][2].setStyleSheet("background-color:#4a0404; color: white")
                     db_manager().addEngagementStatusToDB(id,[1, 'Critical'] )
 
+                    
+
     def putNewsSideBar(self, listaLowBalance, n):
             for i,balance in enumerate(listaLowBalance):
                     name = balance[0]
                     href = balance[1]
+                    phone = balance[3]
                     balance = str(balance[2])
-                    if i == len(listaLowBalance) - 1 and n == len(listaLowBalance) -1: 
-                        self.notification_handler.notification_signal.emit('lowBalanceStudent',
-                                                                    href,
-                                                                    name,
-                                                                    None,
-                                                                    None,
-                                                                    None,
-                                                                    balance,
-                                                                    'yes') 
-                    else:
-                        self.notification_handler.notification_signal.emit('lowBalanceStudent',
-                                                                    href,
-                                                                    name,
-                                                                    None,
-                                                                    None,
-                                                                    None,
-                                                                    balance,
-                                                                    'no') 
+                    self.notification_handler.notification_signal.emit('lowBalanceStudent',
+                                                                href,
+                                                                name,
+                                                                phone,
+                                                                None,
+                                                                None,
+                                                                balance,
+                                                                'no') 
                         
 
     def abrir_archivo(self, enlace):
@@ -1052,9 +1311,22 @@ class Inithome(QtWidgets.QWidget):
                 buttonMetricsWidget = QtWidgets.QWidget()
                 buttonMetricsLayout = QtWidgets.QHBoxLayout(buttonMetricsWidget)
                 buttonMetricsLayout.setSpacing(2)
+
+
+                
+
+                              
+             
+                
+
                 buttonMetricsLayout.setContentsMargins(4,0,0,4)
                 buttonMetricsLayout.setSizeConstraint(0)
 
+
+                
+
+                              
+             
                 
 
                               
@@ -1079,6 +1351,7 @@ class Inithome(QtWidgets.QWidget):
                 ButtonPoduin.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
                 ButtonPoduin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 buttonMetricsLayout.addWidget(ButtonPoduin)
+                
 
 
 
@@ -1198,18 +1471,3 @@ class DonutChartWidget(QtWidgets.QWidget):
 
 
 
-class ClickableLabel(QtWidgets.QLabel):
-    link_clicked = QtCore.pyqtSignal(QtCore.QUrl)
-
-    def __init__(self, parent=None):
-        super(ClickableLabel, self).__init__(parent)
-        self.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
-        self.setOpenExternalLinks(True)
-        self.setStyleSheet("color: blue; text-decoration: underline;")
-
-    def mousePressEvent(self, event):
-        anchor = self.anchorAt(event.pos())
-        if anchor:
-            url = QtCore.QUrl(anchor)
-            self.link_clicked.emit(url)
-        super(ClickableLabel, self).mousePressEvent(event)

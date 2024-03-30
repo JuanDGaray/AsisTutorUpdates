@@ -7,6 +7,7 @@ sys.path.append('../utils/stylesheetUI.py')
 
 from utils import stylesheetUI
 from componentsUI import loading, topWindow
+from utils.constants import data
 from src import selenuimManager
 from src.dataBaseManager import db_manager
 
@@ -146,8 +147,6 @@ class Loggin(QtWidgets.QWidget):
         self.colaborateButton.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.colaborateButton.setAutoFillBackground(False)
         self.colaborateButton.setIconSize(QtCore.QSize(0, 0))
-        self.colaborateButton.setAutoExclusive(False)
-        self.colaborateButton.setAutoDefault(False)
         self.colaborateButton.setObjectName("colaborateButton")
         self.horizontalLayout_6.addWidget(self.colaborateButton, 0, QtCore.Qt.AlignTop)
         self.horizontalLayout_3.addWidget(self.ButtonColab, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
@@ -263,6 +262,24 @@ class Loggin(QtWidgets.QWidget):
             self.labeError.setObjectName("labelError")
             self.labeError.setText("Password or user bad!\nTry again")
             self.verticalLayout_4.addWidget(self.labeError)
+        elif error == 'noTutor':
+            self.labeError.setObjectName("labelError")
+            self.labeError.setText("The application is designed \nonly for Latam Tutors.\n\nThis account is not a Tutor.")
+            self.verticalLayout_4.addWidget(self.labeError)
+        elif error == 'CourseNotFound':
+            self.labeError.setObjectName("labelError")
+            courses = ''
+            for i in data['shortName_couse_latam']:
+                courses = courses+'\n'+i+':'+data['shortName_couse_latam'][i]
+            self.labeError.setText(f"!! The application is designed only for Latam tutors.\nWe noticed that some of your courses have courses\n that we do not have registered, in our database\n we only have the following courses{courses}")
+            self.verticalLayout_4.addWidget(self.labeError)
+        elif error == 'noDriver':
+            self.labeError.setObjectName("labelError")
+            self.labeError.setText("We can't connect to Kodland, the driver is failing.\nPossibly your device is not connected to the Internet \nor the drivers have not been updated correctly.")
+            self.verticalLayout_4.addWidget(self.labeError)
+             
+    
+             
         
         self.logginPush.clicked.connect(lambda: self.switchtoLoading(user=self.lineEdit.text(), passw=self.lineEdit_2.text()))
 

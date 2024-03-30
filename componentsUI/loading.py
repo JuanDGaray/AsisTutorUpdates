@@ -1,12 +1,15 @@
-from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
 from componentsUI import topWindow, home, loggin
 from src.selenuimManager import SelenuimThreadLoggin
 from src.dataBaseManager import db_manager
+from utils.constants import data
+
 
 processLoading = None
 userText = None
 passText = None
+
 
 
 
@@ -61,7 +64,7 @@ class LoadingScreen(QWidget):
         self.verticalLayoutMain.addLayout(self.layout)
        
         self.selenium_thread = SelenuimThreadLoggin()
-        self.selenium_thread.finished_signal.connect(lambda exception, text, : self.finish_task(exception, text))
+        self.selenium_thread.finished_signal.connect(lambda exception, text: self.finish_task(exception, text))
         self.selenium_thread.update_text_signal.connect(self.update_text)
 
 
@@ -69,27 +72,29 @@ class LoadingScreen(QWidget):
             self.start_selenium(userText, passText, True)
 
     def start_selenium(self, UserName, UserPass, NewLogin):
-
         self.selenium_thread.set_credentials(UserName, UserPass, NewLogin)
         self.selenium_thread.start()
 
     def switchToLoggin(self, errorText):
-        loggin.Loggin(self.MainWindow, error=errorText)
-
+        loggin.Loggin(self.MainWindow, error=errorText)  
+        
+        
     def finish_task(self, exception, text):
         if  processLoading == "loggin":
-            if exception:
-                if len(text)==0:
-                    self.switchToLoggin(errorText = "bad_credential")
-                else:
-                    self.progressBar.deleteLater()
-                    self.label.setText(text)    
+            if text=='noDriver':
+                    self.switchToLoggin(errorText = 'noDriver')
+            elif text=='badCredentials':
+                    self.switchToLoggin(errorText = 'bad_credential')
+            elif text=='noTutor':
+                    self.switchToLoggin(errorText = 'noTutor')
             else:
-                home.Inithome(self.MainWindow)
+                nameTutor = self.selenium_thread.get_name()
+                nameTutor = nameTutor.split('\n')
+                nameTutor = nameTutor[-1]
                 if self.checkBool:
-                    db_manager().save_credential(userText, passText)
-                    
-
-
+                    db_manager().save_credential(userText, passText, nameTutor)
+                json = self.selenium_thread.get_dataJsonD()
+                home.Inithome(self.MainWindow, jsonG=json, user=userText, name=nameTutor)
+                
     def update_text(self, text):
         self.label.setText(text)

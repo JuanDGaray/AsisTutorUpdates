@@ -2,6 +2,8 @@
 venv/
 build/ 
 dist/
+AsisTutorUpdatesConsta/
+
 
 # Compiled Python files
 __pycache__/
@@ -12,6 +14,7 @@ Asis2.0/
 __pycache__/
 pyupdater/
 .pyupdater
+
 
 
 # Python cache
@@ -28,7 +31,13 @@ chromedriver.log
 keypack.pyu
 client_config.py
 pyu_settings.py
-
+consta.py
+ExtraxLessonByCourse.py
+ExtraxPointsByCourse.py
+main.py
+AppVersions.json
+test.py
+jsvdrh31254.py
 # IDE-specific files
 .vscode/
 .idea/

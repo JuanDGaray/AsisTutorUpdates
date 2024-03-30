@@ -1,7 +1,8 @@
 import requests, sys, os, json, subprocess, traceback, logging, zipfile, shutil
 import chromedriver_autoinstaller
 import geckodriver_autoinstaller
-from __version__ import __version__
+from __version__ import __version__, AppVersions
+import io, tempfile
 
 
 
@@ -18,11 +19,10 @@ class UpdateApp():
     def __init__(self):
         versionThisApp = __version__
         print("Version app:", versionThisApp)
-        lastVersion = self.takeLastVersion()
-        print("Version repo:", lastVersion)
-        if lastVersion and self.compareVersions(versionThisApp, lastVersion):
-            print(f"¡Hay una nueva versión disponible: {lastVersion}!")
-            UpdateAppRepo(lastVersion)
+        self.takeLastVersion()
+        if self.nameLastVersion and self.nameLastVersion != versionThisApp:
+            print(f"¡Hay una nueva versión disponible: {self.nameLastVersion}!")
+            UpdateAppRepo(self.appVersionUrl, self.zipball_url)
         else:
             print("La aplicación está actualizada.")
         
@@ -31,20 +31,18 @@ class UpdateApp():
         response = requests.get(urlVersion)
         if response.status_code == 200:
             data = response.json()
-            return data.get('name')
-        return None
-
-    def compareVersions(self, version_actual, version_nueva):
-        return version_actual != version_nueva
+            self.appVersionUrl = data.get('assets')[0]['browser_download_url']
+            self.nameLastVersion = data.get('name')
+            self.zipball_url = data.get('zipball_url')
+        else:
+            self.appVersionUrl = None
+            self.nameLastVersion = None
+             
 
     def reiniciar_programa(self):
         print("Se activo")
         subprocess.run([sys.executable] + sys.argv)
         sys.exit()
-
-
-
-
 
 class UpdateDriver:
     def __init__(self):
@@ -58,30 +56,71 @@ class UpdateDriver:
 
 
 class UpdateAppRepo:
+    def __init__(self, urlAppVersions, urlApp):
+       updates = self.check_updates(urlAppVersions)
+       if updates:
+            print(updates)
+            pathFileToUpdate = self.zipLoad(urlApp, updates)
+            for file in pathFileToUpdate:
+                print("Haciendo cambios")
+                pathTempFile = pathFileToUpdate[file]['pathTemp']
+                pathRelativeApp =  pathFileToUpdate[file]['pathApp']
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                parent_dir = os.path.dirname(current_dir)
+                pathApp = os.path.join(parent_dir, pathRelativeApp)
+                with open(pathTempFile, 'r') as file:
+                    newData = file.read()
+                with open(pathApp, "wb") as file:
+                    file.write(newData)
+            os.remove(self.temp_zip_file_path)
 
-    def __init__(self, name):
-        self.latest_version_url = f"https://github.com/JuanDGaray/AsisTutorUpdates/releases/latest/archive/refs/tags/{name}.zip"
-        self.app_directory = os.path.abspath(os.path.dirname(__file__))
-        self.logger = logging.getLogger()
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
-        self.update()
 
+        
 
-    def download_latest_version(self):
-            response = requests.get(self.latest_version_url, stream=True)
+    def check_updates(self, url):
+        try:
+            response = requests.get(url)   
             if response.status_code == 200:
-                with open("latest_version.zip", "wb") as f:
-                    for chunk in response:
-                        f.write(chunk)
-                self.logger.info("La última versión se ha descargado correctamente.")
-                return True
+                data = response.json()
+                return data
             else:
-                self.logger.error("No se pudo descargar la última versión.")
-                return False
+                print("No se pudo obtener el archivo. Código de estado:", response.status_code)
+                return None
+                
+        except Exception as e:
+            print("Ocurrió un error:", e)
 
-    def extract_latest_version(self):
-        with zipfile.ZipFile("latest_version.zip", "r") as zip_ref:
-            zip_ref.extractall(self.app_directory)
+    
+    def zipLoad(self, url, updateJson):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as self.temp_zip_file:
+                    self.temp_zip_file.write(response.content)
+                    self.temp_zip_file_path = self.temp_zip_file.name
+                with zipfile.ZipFile(self.temp_zip_file_path, 'r') as zip_ref:
+                    extract_path = tempfile.mkdtemp()
+                    zip_ref.extractall(extract_path)
+                pathByfile = {}
+                for root, dirs, files in os.walk(extract_path):
+                    for file in files:
+                        pathByfile[file] = os.path.join(root, file)
+                
+                fileToUpdate = {}
+                for namefile, version in (AppVersions.items()):
+                    vrApp = AppVersions[namefile]
+                    vrRelease = updateJson['AppVersions'][namefile]
+                    if vrApp != vrRelease:
+                        namefileTemp = namefile.split('\\')[-1]
+                        fileToUpdate[namefile] = {'pathTemp':pathByfile[namefileTemp], 'pathApp':namefile}
+                    
+                return fileToUpdate
+                
+            else:
+                print("No se pudo obtener el archivo ZIP. Código de estado:", response.status_code)
+                
+        except Exception as e:
+            print("Ocurrió un error:", e)
 
     def update(self):
         if self.download_latest_version():
@@ -92,3 +131,4 @@ class UpdateAppRepo:
             self.logger.error("No se pudo descargar la última versión.")
        
         
+

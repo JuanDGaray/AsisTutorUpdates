@@ -136,6 +136,11 @@ strStyleSheetsBlack = f"""
         
         }}
 
+    #buttonUpdate{{
+        background-color:{StrBackground3};
+        border-radius: 8px;
+    }}
+
        
     #labeNameGroup{{
         color: white;
@@ -274,16 +279,17 @@ strStyleSheetsBlack = f"""
         subcontrol-origin: padding;
         subcontrol-position: top right;
         width: 15px;
-
         border-left-width: 1px;
         border-left-color: {StrBackground4};
         border-left-style: solid;
+        
     }}
 
     #ComboBoxSortBy QAbstractItemView {{
                 background-color: {StrBackground2};
                 border: 2px solid {StrBackground4};
                 selection-background-color:  {StrBackground1};
+                color: white;
             }}
 
     #infolistOrdeGroup{{       
@@ -365,7 +371,7 @@ fontColorLight = "#222230"
 Background1Light = [114, 116, 118]
 Background2Light = [70, 72, 74]
 Background3Light = [0, 30, 0]
-StrBackground1Light = "pink"
+StrBackground1Light = "#dedee3"
 StrBackground2Light = "#f6f1f6"
 StrBackground3Light = "#ffffff"
 StrBackground4Light = "#fff"
@@ -540,6 +546,11 @@ strStyleSheetsLight = f"""
         border: 1.5px solid {StrBackground5Light}; 
         
         }}
+
+    #buttonUpdate{{
+        background-color:{StrBackground3Light};
+        border-radius: 8px;
+    }}
         
     #nameGroup{{
         color: {fontColorLight};

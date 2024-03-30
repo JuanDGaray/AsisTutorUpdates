@@ -1,7 +1,9 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 from utils import stylesheetUI
-from utils.constants import imageBS64
+from utils.constants import data
+
+imageBS64  = data["imageBS64"]
 Theme = "Light"
 import base64
 def bs4Process(bs4):
@@ -13,7 +15,9 @@ def bs4Process(bs4):
 
 class TopWidget():
       
-    def CreateTopWidgetTitle(self, hLayoutMain, MainWindow):
+    def CreateTopWidgetTitle(self, hLayoutMain, MainWindow, sidebarChild=None, scrollArea=None):
+        self.sidebarChild = sidebarChild
+        self.scrollArea = scrollArea
         self.Theme = Theme
         self.MainWindow = MainWindow
         self.label = QtWidgets.QGroupBox()
@@ -91,16 +95,22 @@ class TopWidget():
         self.MainWindow.showMinimized()
 
     def exitApplication(self):
+        QtWidgets.QApplication.quit
         sys.exit()
 
     def maximizeWindow(self, *arg):
-        print(self.MainWindow.width())
         if self.MainWindow.width()> 1000:
             self.MainWindow.resize(900, 550)
+            if self.sidebarChild is not None:
+                self.sidebarChild.setGeometry(24, 0, 200, self.MainWindow.height())
+                self.scrollArea.setGeometry(-2, 30, 200, self.MainWindow.height()-75)
         else:
             desktop = QtWidgets.QDesktopWidget()
             screen_rect = desktop.screenGeometry(desktop.primaryScreen())
             self.MainWindow.setGeometry(screen_rect)
+            if self.sidebarChild is not None:
+                self.sidebarChild.setGeometry(24, 0, 200, self.MainWindow.height())
+                self.scrollArea.setGeometry(-2, 30, 200, self.MainWindow.height()-60)
 
     def ChangeTheme(self):
         if self.Theme == "Dark":
