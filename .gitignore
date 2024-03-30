@@ -3,6 +3,7 @@ venv/
 build/ 
 dist/
 AsisTutorUpdatesConsta/
+AsisTutorUpdatesConsta/consta.json
 
 
 # Compiled Python files
