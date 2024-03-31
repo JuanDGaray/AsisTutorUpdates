@@ -85,7 +85,7 @@ window.onload = function() {
 
 
 function captureScreen() {
-    html2canvas(document.getElementById('main')).then(function(canvas) {
+    html2canvas(document.getElementById('container-metrics')).then(function(canvas) {
         var link = document.createElement('a');
         link.href = canvas.toDataURL();
         link.download = StdName +'.png';

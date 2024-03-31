@@ -190,9 +190,12 @@ class Inithome(QtWidgets.QWidget):
         self.putMetricDonut()
 
     def retranslateUi(self, parent):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        pathuserImg = os.path.join(parent_dir,'assets/images/user (1).png')
         self._translate = QtCore.QCoreApplication.translate
         parent.setWindowTitle(self._translate("MainWindow", "MainWindow"))
-        self.userImg.setText(self._translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/user (1).png\"/></p></body></html>"))
+        self.userImg.setText(self._translate("MainWindow", f"<html><head/><body><p><img src=\"{pathuserImg}\"/></p></body></html>"))
         self.Group.setText(self._translate("MainWindow", "Groups"))
 
     def hideGraduatesGroup(self, state):
@@ -307,7 +310,7 @@ class Inithome(QtWidgets.QWidget):
         self.horizontalLayout_4.setSpacing(0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
 
-        #Mení
+        #MenÃ­
         self.menu = QtWidgets.QWidget(self.body)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)

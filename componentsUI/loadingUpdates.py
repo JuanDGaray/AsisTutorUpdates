@@ -1,12 +1,8 @@
-import time, sys
-from PyQt5.QtWidgets import QProgressBar, QApplication, QMainWindow, QHBoxLayout, QPushButton, QLabel, QVBoxLayout, QWidget, QStackedWidget, QDialog
+import sys, importlib
+from PyQt5.QtWidgets import QProgressBar,QLabel, QVBoxLayout, QWidget, QStackedWidget, QDialog
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QMovie
-from componentsUI import loggin, home
+from componentsUI import loggin
 from  src import loadUpdates
-sys.path.append('../utils/stylesheetUI.py')
-
-from utils import stylesheetUI
 
 
 class WorkerThread(QThread):
@@ -19,7 +15,9 @@ class WorkerThread(QThread):
         for i in range(3):
             self.update_text_signal.emit(taskStr[i])
             if i == 0:
-                loadUpdates.UpdateApp()
+                update = loadUpdates.UpdateApp()
+                if update:
+                    importlib.reload(loggin)
             if i == 1:
                 loadUpdates.UpdateDriver()
         self.finished.emit()

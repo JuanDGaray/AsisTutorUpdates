@@ -9,10 +9,24 @@ body{
     
 }
 main{
-    padding: 10px;
-    padding-bottom: 30px;
+    margin: 0px;
+    display: flex;
+    height: 100vh;
     background-image: linear-gradient(135deg, #8BC6EC 0%, #5e9b75a9 100%);
+    justify-content: center;
+    align-items: center;
+    padding: 14px;
     
+}
+#container-metrics{
+    background-color: #d3fd6aad;
+    margin: 14px;
+    border-radius: 14px;
+    padding: 14px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    -ms-border-radius: 14px;
+    -o-border-radius: 14px;
 }
 .HeaderProfile{
     width: 100%;
@@ -143,7 +157,6 @@ left: 140px;
     display: flex;
     flex-direction: row;
     width: 80%;
-    height: 300px;
     background-color:  #f0f0f0;
     margin: 18px;
     padding: 10px;

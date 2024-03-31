@@ -1,16 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import os, time
 import sys
-import threading as th
 sys.path.append('../utils/stylesheetUI.py')
 
-
-from utils import stylesheetUI
 from componentsUI import loading, topWindow
 from utils.constants import data
-from src import selenuimManager
 from src.dataBaseManager import db_manager
-
+import os
 UserIsLogged = False
 UserInput = None
 
@@ -310,12 +305,17 @@ class Loggin(QtWidgets.QWidget):
         QtCore.QMetaObject.connectSlotsByName(parent)
 
     def retranslateUi(self, MainWindow):
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            pathGitImg = os.path.join(parent_dir,'assets/images/github.png')
+            pathBugImg = os.path.join(parent_dir,'assets/images/insect.png')
+            pathTutoringImg = os.path.join(parent_dir,'assets/images/tutoring.png')
             _translate = QtCore.QCoreApplication.translate
             MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-            self.versionILabel.setText(_translate("MainWindow", "Versión 2.0.18.15 | by Juan Garay"))
-            self.gitIcon.setText(_translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/github.png\"/></p></body></html>"))
+            self.versionILabel.setText(_translate("MainWindow", "VersiÃ³n 2.0.18.15 | by Juan Garay"))
+            self.gitIcon.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathGitImg}\"/></p></body></html>"))
             self.colaborateButton.setText(_translate("MainWindow", "Cooperate"))
-            self.bugIcon.setText(_translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/insect.png\"/></p></body></html>"))
+            self.bugIcon.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathBugImg}\"/></p></body></html>"))
             self.bugButton.setText(_translate("MainWindow", "Report Bug"))
             self.label.setText(_translate("MainWindow", "User:"))
             self.label_4.setText(_translate("MainWindow", "Password:"))
@@ -325,7 +325,7 @@ class Loggin(QtWidgets.QWidget):
                                                 "p, li { white-space: pre-wrap; }"
                                                 "</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">"
                                                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Tutor Assistant is a web scraping-based program designed to efficiently scan tutor data and facilitate the organization and management of student information.</p></body></html>"))
-            self.label_5.setText(_translate("MainWindow", "<html><head/><body><p><img src=\"assets/images/tutoring.png\"/></p></body></html>"))
+            self.label_5.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathTutoringImg}\"/></p></body></html>"))
     def update_text(self, text):
         self.label.setText(text)
 

@@ -32,7 +32,7 @@ class UpdateApp():
         if response.status_code == 200:
             data = response.json()
             self.appVersionUrl = data.get('assets')[0]['browser_download_url']
-            self.nameLastVersion = data.get('name')
+            self.nameLastVersion = data.get('tag_name')
             self.zipball_url = data.get('zipball_url')
         else:
             self.appVersionUrl = None
@@ -59,10 +59,8 @@ class UpdateAppRepo:
     def __init__(self, urlAppVersions, urlApp):
        updates = self.check_updates(urlAppVersions)
        if updates:
-            print(updates)
             pathFileToUpdate = self.zipLoad(urlApp, updates)
             for file in pathFileToUpdate:
-                print("Haciendo cambios")
                 pathTempFile = pathFileToUpdate[file]['pathTemp']
                 pathRelativeApp =  pathFileToUpdate[file]['pathApp']
                 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -71,8 +69,9 @@ class UpdateAppRepo:
                 with open(pathTempFile, 'r') as file:
                     newData = file.read()
                 with open(pathApp, "wb") as file:
-                    file.write(newData)
+                    file.write(newData.encode('utf-8'))
             os.remove(self.temp_zip_file_path)
+            return True
 
 
         
