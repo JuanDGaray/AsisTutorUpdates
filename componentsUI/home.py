@@ -514,11 +514,12 @@ class Inithome(QtWidgets.QWidget):
 
                     
     def toggle_sidebar(self):
-        if self.sidebar_visible:
+        print(self.sidebar.pos().x())
+        if self.sidebar.pos().x() > 850:
             self.hide_sidebar()
         else:
             self.show_sidebar()
-        self.sidebar_visible = not self.sidebar_visible
+
 
     def show_sidebar(self):
         self.animation.setStartValue(self.sidebar.pos())

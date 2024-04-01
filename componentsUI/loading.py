@@ -84,7 +84,7 @@ class LoadingScreen(QWidget):
             if text=='noDriver':
                     self.switchToLoggin(errorText = 'noDriver')
             elif text=='badCredentials':
-                    self.switchToLoggin(errorText = 'bad_credential')
+                    self.switchToLoggin(errorText = 'badCredentials')
             elif text=='noTutor':
                     self.switchToLoggin(errorText = 'noTutor')
             else:
@@ -93,7 +93,10 @@ class LoadingScreen(QWidget):
                 nameTutor = nameTutor[-1]
                 if self.checkBool:
                     db_manager().save_credential(userText, passText, nameTutor)
-                json = self.selenium_thread.get_dataJsonD()
+                try:
+                    json = self.selenium_thread.get_dataJsonD()
+                except Exception as e:
+                    print(e)
                 home.Inithome(self.MainWindow, jsonG=json, user=userText, name=nameTutor)
                 
     def update_text(self, text):

@@ -4,6 +4,15 @@ from componentsUI import loggin, loadingUpdates
 from utils import stylesheetUI
 
 window = "loggin"
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+    def closeEvent(self, event):
+
+        event.accept()
+
+
 class Ui_MainWindow(object):
 
 
@@ -19,15 +28,14 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet(stylesheetUI.strStyleSheetsLight)
         self.loading = loadingUpdates.LoadingScreen(MainWindow, loggin.Loggin(MainWindow, error=False))
         MainWindow.setCentralWidget(self.loading)
-        self.loading.show()
+
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
+    MainWindow = MainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
     
+ 

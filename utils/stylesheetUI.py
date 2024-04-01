@@ -206,7 +206,9 @@ strStyleSheetsBlack = f"""
     #HomeON{{
         background-color: {StrBackground1};
         border-raduis 0px;
-        color: {fontColor}M
+        margin: 0px;
+        padding: 0px;
+        color: {fontColor}
     }}
     #HomeON:hover{{ 
         background-color: {StrBackground3};
@@ -410,7 +412,9 @@ strStyleSheetsLight = f"""
     background-color:{StrBackground1Light}; 
     padding: 40px
     }} 
-    
+    #WindowTop{{
+        border-bottom: 2px solid {StrBackground3Light}; 
+    }}
     #header, #body, #footer{{
     background-color:{StrBackground2Light};
     border-radius: 8px;
@@ -676,15 +680,16 @@ strStyleSheetsLight = f"""
         subcontrol-origin: padding;
         subcontrol-position: top right;
         width: 15px;
-
         border-left-width: 1px;
         border-left-color: {StrBackground1Light};
         border-left-style: solid;
+        color: {fontColorLight};
     }}
 
     #ComboBoxSortBy QAbstractItemView {{
                 background-color: {StrBackground5Light};
                 border: 2px solid {StrBackground1Light};
+                color: {fontColorLight};
                 selection-background-color:  {StrBackground1Light};
             }}
 

@@ -17,7 +17,7 @@ import math
 import pandas  as pd
 from utils.constants import data
 from cryptography.fernet import Fernet as fr
-import json, os
+import json, os, traceback
 
 imageBS64  = data["imageBS64"]
 href_couse_latamByTotalName = data["href_couse_latamByTotalName"]
@@ -32,13 +32,17 @@ color_cursoBycode = data["color_cursoBycode"]
 rankData = {}
 
 def waitElement(driver, XPATH):
-                return WebDriverWait(driver, 50).until(
+                return WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.XPATH, XPATH))
                 )
 def waitElementCSS(driver, CSS):
-                return WebDriverWait(driver, 50).until(
+                return WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, CSS))
                 )
+def waitElements(driver, XPATH):
+    return WebDriverWait(driver, 30).until(
+        EC.presence_of_all_elements_located((By.XPATH, XPATH))
+    )
 driver = None
 cacheStudent = {}
 
@@ -73,6 +77,7 @@ InstaciaADB = dataBaseManager.db_manager()
 UserName = None
 UserPass = None
 
+driverCache = []
 
 class SelenuimThreadLoggin(QThread):
     update_text_signal = pyqtSignal(str)
@@ -89,7 +94,9 @@ class SelenuimThreadLoggin(QThread):
         
         self.NewLogin = NewLogin 
         
-
+    def getDriver(self):
+        return driverCache
+    
     def run(self):
         global driver
         self.update_text_signal.emit("Open page Kodland...")
@@ -99,7 +106,7 @@ class SelenuimThreadLoggin(QThread):
             driver = webdriver.Chrome(options=options)
             driver.set_window_size(800, 600)
             driver.delete_all_cookies()
-
+        driverCache.append(driver)
         self.update_text_signal.emit("Comprobando credenciales...")
         self.login_scrapping1(UserName,UserPass,self.NewLogin)
         """except Exception as e:
@@ -147,12 +154,11 @@ class SelenuimThreadLoggin(QThread):
                 mBox.send_keys(UserPass)
                 button = driver.find_element(by=By.XPATH, value='/html/body/div[1]/div[1]/form/button')
                 button.click()
-                self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
                 try:
+                    self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
                     url_join = driver.current_url
                     if url_join == 'https://backoffice.kodland.org/en/groups/':
                         self.update_text_signal.emit("Extracting groups...")
-                        self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
                         try:
                             self.fasd3248asd("-G34PgnvDtjQzALQyDYmCJ5kOARhLFjrSLgNg1wJFZY=")
                         except Exception as e:
@@ -167,9 +173,10 @@ class SelenuimThreadLoggin(QThread):
                         self.update_text_signal.emit("Open groups...")
                         self.finished_signal.emit(False, None)
                 except:
-                    self.finished_signal.emit(True, 'badCredentiale')
+                    self.finished_signal.emit(True, 'badCredentials')
                     driver.quit()
-            except Exception as e: 
+            except Exception as e:
+                traceback.print_exc()
                 print(e)
                 self.finished_signal.emit(True, 'noDriver')
                 
@@ -527,6 +534,7 @@ class SelenuimThreadLoggin(QThread):
                     driver2 = webdriver.Chrome(options=options)
                     driver2.set_window_size(800, 600)
                     driver2.delete_all_cookies()
+                driverCache.append(driver2)
                 driver2.get(f"https://backoffice.kodland.org/en/group_{id_group}/")
                 mBox = driver2.find_element(by=By.CSS_SELECTOR,value='#id_username')
                 mBox.send_keys(user)
@@ -711,8 +719,6 @@ class seleniumTakeMetricsByGroupBasic():
             
     def driverQuit(self):
         driver.quit()
-
-
 
 
 def waitElementCSS(driver, XPATH):

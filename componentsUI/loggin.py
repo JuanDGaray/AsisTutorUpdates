@@ -5,7 +5,7 @@ sys.path.append('../utils/stylesheetUI.py')
 from componentsUI import loading, topWindow
 from utils.constants import data
 from src.dataBaseManager import db_manager
-import os
+import os, webbrowser
 UserIsLogged = False
 UserInput = None
 
@@ -143,6 +143,7 @@ class Loggin(QtWidgets.QWidget):
         self.colaborateButton.setAutoFillBackground(False)
         self.colaborateButton.setIconSize(QtCore.QSize(0, 0))
         self.colaborateButton.setObjectName("colaborateButton")
+        self.colaborateButton.clicked.connect(lambda: webbrowser.open_new("https://github.com/JuanDGaray/AsisTutorUpdates/tree/main"))
         self.horizontalLayout_6.addWidget(self.colaborateButton, 0, QtCore.Qt.AlignTop)
         self.horizontalLayout_3.addWidget(self.ButtonColab, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self.ButtonBug = QtWidgets.QFrame(self.BugCotainer)
@@ -160,6 +161,7 @@ class Loggin(QtWidgets.QWidget):
         self.bugIcon.setObjectName("bugIcon")
         self.hboxlayout.addWidget(self.bugIcon)
         self.bugButton = QtWidgets.QPushButton(self.ButtonBug)
+        self.bugButton.clicked.connect(lambda: webbrowser.open_new("https://github.com/JuanDGaray/AsisTutorUpdates/tree/main"))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -253,7 +255,7 @@ class Loggin(QtWidgets.QWidget):
         self.verticalLayout_5.addLayout(self.checkboxLayout)
         self.verticalLayout_5.addWidget(self.logginButton)
         self.labeError = QtWidgets.QLabel()
-        if error == "bad_credential": 
+        if error == "badCredentials": 
             self.labeError.setObjectName("labelError")
             self.labeError.setText("Password or user bad!\nTry again")
             self.verticalLayout_4.addWidget(self.labeError)

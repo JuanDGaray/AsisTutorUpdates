@@ -2,6 +2,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 from utils import stylesheetUI
 from utils.constants import data
+from concurrent.futures import ThreadPoolExecutor
+
 
 imageBS64  = data["imageBS64"]
 Theme = "Light"
@@ -28,6 +30,7 @@ class TopWidget():
         self.label.setAlignment(QtCore.Qt.AlignRight)
         self.label.mousePressEvent = self.mousePressEvent
         self.label.mouseMoveEvent = self.mouseMoveEvent
+        self.label.setObjectName("WindowTop")
         hLayoutMain.addWidget(self.label)
         self.label.setObjectName("BarTitle")
         #Button Max, min, exit
@@ -95,7 +98,19 @@ class TopWidget():
         self.MainWindow.showMinimized()
 
     def exitApplication(self):
-        QtWidgets.QApplication.quit
+        from src.selenuimManager import driverCache
+        def close_driver(driver):
+            try:
+                driver.quit()
+            except Exception as e:
+                print(f"Error al cerrar el driver: {e}")
+        if len(driverCache) > 0:   
+            NUM_THREADS = len(driverCache)
+            self.MainWindow.hide()
+            with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+                executor.map(close_driver, driverCache)
+        
+        QtWidgets.QApplication.quit()
         sys.exit()
 
     def maximizeWindow(self, *arg):

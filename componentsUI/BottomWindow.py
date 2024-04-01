@@ -13,7 +13,7 @@ Functions:
 from PyQt5 import QtWidgets, QtCore, QtGui
 import threading as th
 from functools import partial
-from src.selenuimManager import SelenuimThreadLoggin
+from src.selenuimManager import SelenuimThreadLoggin, UserName, UserPass
 from src.dataBaseManager import db_manager
 import os
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -412,8 +412,8 @@ class BottomWidget():
                     curso = curso, 
                     last_class = last_class,
                     next_class = next_class,
-                    user=dataLoggin[1],
-                    passw=dataLoggin[2])
+                    user=UserName,
+                    passw=UserPass)
             listSd = self.metrics[name_group]
             listSdID = list(listSd.keys())
             listSdMetrics = list(listSd.values())
