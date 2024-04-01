@@ -57,9 +57,12 @@ class UpdateDriver:
 
 class UpdateAppRepo:
     def __init__(self, urlAppVersions, urlApp):
+       print(urlAppVersions)
        updates = self.check_updates(urlAppVersions)
+       print(updates)
        if updates:
             pathFileToUpdate = self.zipLoad(urlApp, updates)
+            print(pathFileToUpdate)
             for file in pathFileToUpdate:
                 pathTempFile = pathFileToUpdate[file]['pathTemp']
                 pathRelativeApp =  pathFileToUpdate[file]['pathApp']
@@ -77,17 +80,14 @@ class UpdateAppRepo:
         
 
     def check_updates(self, url):
-        try:
-            response = requests.get(url)   
-            if response.status_code == 200:
-                data = response.json()
-                return data
-            else:
-                print("No se pudo obtener el archivo. Código de estado:", response.status_code)
-                return None
-                
-        except Exception as e:
-            print("Ocurrió un error:", e)
+        response = requests.get(url)   
+        if response.status_code == 200:
+            data = response.json()
+            print("Data")
+            return data
+        else:
+            print("No se pudo obtener el archivo. Código de estado:", response.status_code)
+            return None
 
     
     def zipLoad(self, url, updateJson):
@@ -101,6 +101,7 @@ class UpdateAppRepo:
                     extract_path = tempfile.mkdtemp()
                     zip_ref.extractall(extract_path)
                 pathByfile = {}
+                print(extract_path)
                 for root, dirs, files in os.walk(extract_path):
                     for file in files:
                         pathByfile[file] = os.path.join(root, file)

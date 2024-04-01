@@ -1,4 +1,4 @@
-__version__ = 'v1.0.1'
+__version__ = 'v1.1.1'
 
 
 AppVersions = {
@@ -7,7 +7,7 @@ AppVersions = {
     'bot.ico':1.0,
     'requirements.txt':1.0,
     'setup.py':1.0,
-    '__version__.py':1.0,
+    '__version__.py':1.1,
     r'assets\images\actualizar.png':1.0,
     'assets\images\Bars.gif':1.0,
     'assets\images\exit-full-screen.png':1.0,
@@ -40,14 +40,14 @@ AppVersions = {
     r'assets\template-metrics-students\Uchenik4x2.png':1.0,
     r'assets\template-metrics-students\util.json':1.0,
     'componentsUI\BottomWindow.py':1.0,
-    'componentsUI\home.py':1.0,
+    'componentsUI\home.py':1.1,
     'componentsUI\loading.py':1.0,
     'componentsUI\loadingUpdates.py':1.0,
     'componentsUI\loggin.py':1.0,
     r'componentsUI\topWindow.py':1.0,
     'src\dataBaseManager.py':1.0,
     'src\loadUpdates.py':1.0,
-    'src\selenuimManager.py':1.0,
+    'src\selenuimManager.py':1.1,
     'src\DB\TutorBase1.db':1.0,
     'utils\constants.py':1.0,
     'utils\stylesheetUI.py':1.0,

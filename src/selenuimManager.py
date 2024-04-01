@@ -101,7 +101,7 @@ class SelenuimThreadLoggin(QThread):
         global driver
         self.update_text_signal.emit("Open page Kodland...")
         try:
-            driver= webdriver.Firefox()
+            driver= webdriver.Firefox(options=firefox_options)
         except:
             driver = webdriver.Chrome(options=options)
             driver.set_window_size(800, 600)
@@ -143,10 +143,11 @@ class SelenuimThreadLoggin(QThread):
     def get_name(self):
         return self.NameTutor
     
-    def login_scrapping1(self, UserName,UserPass,NewLogin): 
+    def login_scrapping1(self, UserName_,UserPass_,NewLogin): 
+            global UserName, UserPass
+            UserName = UserName_
+            UserPass = UserPass_
             try:
-                userPortable = UserName
-                passwordPortable = UserPass
                 driver.get("https://backoffice.kodland.org/en/groups/")
                 mBox = driver.find_element(by=By.CSS_SELECTOR,value='#id_username')
                 mBox.send_keys(UserName)
@@ -154,6 +155,7 @@ class SelenuimThreadLoggin(QThread):
                 mBox.send_keys(UserPass)
                 button = driver.find_element(by=By.XPATH, value='/html/body/div[1]/div[1]/form/button')
                 button.click()
+
                 try:
                     self.NameTutor = waitElement(driver, textXPathgroup["nameTutor"]).text
                     url_join = driver.current_url
@@ -537,9 +539,9 @@ class SelenuimThreadLoggin(QThread):
                 driverCache.append(driver2)
                 driver2.get(f"https://backoffice.kodland.org/en/group_{id_group}/")
                 mBox = driver2.find_element(by=By.CSS_SELECTOR,value='#id_username')
-                mBox.send_keys(user)
+                mBox.send_keys(UserName)
                 mBox = driver2.find_element(by=By.XPATH, value='//*[@id="id_password"]')
-                mBox.send_keys(passw)
+                mBox.send_keys(UserPass)
                 button = driver2.find_element(by=By.XPATH, value='/html/body/div[1]/div[1]/form/button')
                 button.click()  
                 grouped_driver_packs[name_group] =  driver2
