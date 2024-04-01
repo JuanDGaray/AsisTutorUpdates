@@ -23,8 +23,10 @@ class UpdateApp():
         if self.nameLastVersion and self.nameLastVersion != versionThisApp:
             print(f"¡Hay una nueva versión disponible: {self.nameLastVersion}!")
             UpdateAppRepo(self.appVersionUrl, self.zipball_url)
+            self.update_available = True
         else:
             print("La aplicación está actualizada.")
+            self.update_available = False
         
 
     def takeLastVersion(self):
@@ -32,6 +34,7 @@ class UpdateApp():
         if response.status_code == 200:
             data = response.json()
             self.appVersionUrl = data.get('assets')[0]['browser_download_url']
+            self.href = data.get('html_url')
             self.nameLastVersion = data.get('tag_name')
             self.zipball_url = data.get('zipball_url')
         else:
@@ -40,10 +43,14 @@ class UpdateApp():
              
 
     def reiniciar_programa(self):
-        print("Se activo")
         subprocess.run([sys.executable] + sys.argv)
         sys.exit()
 
+    def is_update_available(self):
+        return self.update_available
+    
+    def takeHref(self):
+        return self.href
 class UpdateDriver:
     def __init__(self):
         try:
@@ -59,7 +66,6 @@ class UpdateAppRepo:
     def __init__(self, urlAppVersions, urlApp):
        print(urlAppVersions)
        updates = self.check_updates(urlAppVersions)
-       print(updates)
        if updates:
             pathFileToUpdate = self.zipLoad(urlApp, updates)
             print(pathFileToUpdate)
@@ -74,7 +80,7 @@ class UpdateAppRepo:
                 with open(pathApp, "wb") as file:
                     file.write(newData.encode('utf-8'))
             os.remove(self.temp_zip_file_path)
-            return True
+
 
 
         
@@ -113,7 +119,6 @@ class UpdateAppRepo:
                     if vrApp != vrRelease:
                         namefileTemp = namefile.split('\\')[-1]
                         fileToUpdate[namefile] = {'pathTemp':pathByfile[namefileTemp], 'pathApp':namefile}
-                    
                 return fileToUpdate
                 
             else:
