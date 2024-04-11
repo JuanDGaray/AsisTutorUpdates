@@ -7,7 +7,7 @@ AppVersions = {
     'bot.ico':1.0,
     'requirements.txt':1.2,
     'setup.py':1.0,
-    '__version__.py':1.1,
+    '__version__.py':1.2,
     r'assets\images\actualizar.png':1.0,
     'assets\images\Bars.gif':1.0,
     'assets\images\exit-full-screen.png':1.0,
