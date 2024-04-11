@@ -185,7 +185,6 @@ class SelenuimThreadLoggin(QThread):
 
     def take_groups(self):
             global drive
-            curso = {'802':'¡La magia del código con Scratch!', '714': 'Python', '663': 'Scratch'}
             soup = BeautifulSoup(driver.page_source, "html.parser")
             n_tablegroup = len(soup.find_all('a', class_="endless_page_link"))
             if n_tablegroup == 0:
@@ -563,9 +562,9 @@ class SelenuimThreadLoggin(QThread):
                 name_course= grouped_driver_cache[name_group]["name_course"]
             else:
                 activity = {}
-                n_class= waitElementCSS(driver2, '.group_card_table > tbody:nth-child(1) > tr:nth-child(12) > td:nth-child(2)').text.split('/')
+                n_class= waitElement(driver2,textXPathgroup["Lessons completed"]).text.split('/')
                 n_class = int(n_class[0])
-                name_course= waitElementCSS(driver2, '.group_card_table > tbody:nth-child(1) > tr:nth-child(14) > td:nth-child(2)').text
+                name_course= waitElement(driver2, textXPathgroup["Course"]).text
                 grouped_driver_cache[name_group] = {}
                 grouped_driver_cache[name_group]["n_class"] = n_class
                 grouped_driver_cache[name_group]["name_course"] = name_course
@@ -652,8 +651,10 @@ class seleniumTakeMetricsByGroupBasic():
             n_std = group[2].split('/')
             n_std = int(n_std[0])
             id_course = id_couse_latamByTotalName[group[3]]
+            print(lesson_by_course_latam[id_course])
             try:
                 if n_std > 0 and (lesson_by_course_latam[id_course]['names'].index(group[4]) < 31):
+                    print("contando")
                     driver.get(f"https://backoffice.kodland.org/en/group_{group[0]}/")
                     grupo_name = group[1]
                     curso_name = group[3]
@@ -709,9 +710,12 @@ class seleniumTakeMetricsByGroupBasic():
                     rankData[grupo_name] = [total_Points_By_Actual_Lesson, df_sort, int((totalPointsByStudents/totalPoints)*100), color_curso, n_std]
                     return [listStLowBalance, [totalPointsByStudents, totalPoints-totalPointsByStudents, 'no'], empty_attendances]
                 else:
+                    print("No contando")
                     InstaciaADB.addEngagementToDb(group[0], (0,0,'yes'))
                     return [listStLowBalance, [0,0,'yes'], 0]
             except Exception as e:
+                print(e)
+                traceback.print_exc()
                 if group[11] == "New":
                     InstaciaADB.addEngagementToDb(group[0], (0,0,'no'))
                     return [listStLowBalance, [0,0,'no'], 0]

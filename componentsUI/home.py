@@ -107,12 +107,15 @@ class Inithome(QtWidgets.QWidget):
                         except Exception as e:
                             print(e)
             elif type == 'DelButton':
-                for button in buttonContainer[href_group]:
-                    try:                    
-                        button.setEnabled(False)
-                        button.setVisible(False)
-                    except Exception as e:
-                        print(e)
+                try:
+                    for button in buttonContainer[href_group]:
+                        try:                    
+                            button.setEnabled(False)
+                            button.setVisible(False)
+                        except Exception as e:
+                            print(e)
+                except Exception as e:
+                            print(e)
                         
             else:
                 boxToolsNotifications = QtWidgets.QComboBox()
@@ -447,6 +450,7 @@ class Inithome(QtWidgets.QWidget):
         self.infolistOrdeGroupContainer = QtWidgets.QHBoxLayout()
 
         self.labelCheckGraduate = QtWidgets.QLabel()
+        self.labelCheckGraduate.setFont(font)
         self.labelCheckGraduate.setText("Graduates")
         self.inputCheckGraduate = QtWidgets.QCheckBox()
         self.inputCheckGraduate.setChecked(True)
@@ -855,10 +859,20 @@ class Inithome(QtWidgets.QWidget):
             labelNextClassArg.setFont(font)
             labelNextClassArg.setWordWrap(True)
             lastLesson =  self.n_group_list[group][4]
-            if course in id_couse_latamByTotalName:
+            if course in id_couse_latamByTotalName.keys():
                 code = id_couse_latamByTotalName[course]
-                lessonHerfInd =  lesson_by_course_latam[code]['names'].index(lastLesson)
-                lessonHerf =  lesson_by_course_latam[code]['ref'][lessonHerfInd]
+                try:
+                    lessonHerfInd =  lesson_by_course_latam[code]['names'].index(lastLesson)
+                    lessonHerf =  lesson_by_course_latam[code]['ref'][lessonHerfInd]
+                except:
+                    lessonHerfInd = ""
+                    lessonHerf = ""
+                labelNextClassArg.setText(_translate("MainWindow",f"<a href='{lessonHerf}'> {self.n_group_list[group][4][0:10]}</a>"))
+                labelNextClassArg.setToolTip(_translate("MainWindow",f"{self.n_group_list[group][4]}"))
+            elif course == None:
+                code = None
+                lessonHerfInd =  None
+                lessonHerf =  None
                 labelNextClassArg.setText(_translate("MainWindow",f"<a href='{lessonHerf}'> {self.n_group_list[group][4][0:10]}</a>"))
                 labelNextClassArg.setToolTip(_translate("MainWindow",f"{self.n_group_list[group][4]}"))
             else:

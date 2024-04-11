@@ -314,7 +314,7 @@ class Loggin(QtWidgets.QWidget):
             pathTutoringImg = os.path.join(parent_dir,'assets/images/tutoring.png')
             _translate = QtCore.QCoreApplication.translate
             MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-            self.versionILabel.setText(_translate("MainWindow", "VersiÃ³n 2.0.18.15 | by Juan Garay"))
+            self.versionILabel.setText(_translate("MainWindow", "Version 2.0.18.15 | by Juan Garay"))
             self.gitIcon.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathGitImg}\"/></p></body></html>"))
             self.colaborateButton.setText(_translate("MainWindow", "Cooperate"))
             self.bugIcon.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathBugImg}\"/></p></body></html>"))
@@ -325,7 +325,7 @@ class Loggin(QtWidgets.QWidget):
             self.label_6.setText(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
                                                 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
                                                 "p, li { white-space: pre-wrap; }"
-                                                "</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">"
+                                                "</style></head><body style=\" font-family:\'Sans Serif\';font-weight:400; font-style:normal;\">"
                                                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Tutor Assistant is a web scraping-based program designed to efficiently scan tutor data and facilitate the organization and management of student information.</p></body></html>"))
             self.label_5.setText(_translate("MainWindow", f"<html><head/><body><p><img src=\"{pathTutoringImg}\"/></p></body></html>"))
     def update_text(self, text):

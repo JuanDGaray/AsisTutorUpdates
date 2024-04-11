@@ -25,6 +25,7 @@ strStyleSheetsBlack = f"""
     padding: 0;
     margin: 0;
     color: white;
+    font-size: 12px;
     }} 
 
     a {{
@@ -393,7 +394,7 @@ strStyleSheetsLight = f"""
     background: transparent;
     padding: 0;
     margin: 0;
-    color: {StrBackground5Light};
+    font-size: 12px;    
     }} 
 
     QMainWindow {{
