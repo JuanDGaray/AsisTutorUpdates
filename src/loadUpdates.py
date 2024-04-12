@@ -68,6 +68,7 @@ class UpdateAppRepo:
        updates = self.check_updates(urlAppVersions)
        if updates:
             pathFileToUpdate = self.zipLoad(urlApp, updates)
+            print(pathFileToUpdate)
             for file in pathFileToUpdate:
                 pathTempFile = pathFileToUpdate[file]['pathTemp']
                 pathRelativeApp =  pathFileToUpdate[file]['pathApp']
@@ -116,8 +117,8 @@ class UpdateAppRepo:
                         pathByfile[file] = os.path.join(root, file)
                 
                 fileToUpdate = {}
-                for namefile, version in (__version__.AppVersions.items()):
-                    vrApp = __version__.AppVersions[namefile]
+                for namefile, version in (AppVersions.items()):
+                    vrApp = AppVersions[namefile]
                     vrRelease = updateJson['AppVersions'][namefile]
                     if vrApp != vrRelease:
                         namefileTemp = namefile.split('\\')[-1]

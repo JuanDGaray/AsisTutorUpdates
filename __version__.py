@@ -1,8 +1,6 @@
-from componentsUI import   BottomWindow, home, jsvdrh31254, loading, loadingUpdates, loggin, topWindow
+from componentsUI import   BottomWindow, home, loading, loadingUpdates, loggin, topWindow
 from src import dataBaseManager, loadUpdates,selenuimManager
 from utils import constants,stylesheetUI
-import setup
-
 
 __version__ = 'v1.1.2'
 
@@ -66,7 +64,6 @@ AppVersionsFilePy = {
 'AsisTutor_v1.0.0.py':None,
 'bot.ico':None,
 'requirements.txt':None,
-'setup.py':setup.__file__,
 '__version__.py':__file__  ,
 'componentsUI\BottomWindow.py':BottomWindow.__file__,
 'componentsUI\home.py':home.__file__,
