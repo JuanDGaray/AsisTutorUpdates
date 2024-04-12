@@ -519,7 +519,7 @@ class Inithome(QtWidgets.QWidget):
                     
     def toggle_sidebar(self):
         print(self.sidebar.pos().x())
-        if self.sidebar.pos().x() < 850:
+        if (self.sidebar.pos().x() + 40) < self.WindowMain.width():
             self.hide_sidebar()
         else:
             self.show_sidebar()

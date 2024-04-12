@@ -1,7 +1,7 @@
 import requests, sys, os, json, subprocess, traceback, logging, zipfile, shutil
 import chromedriver_autoinstaller
 import geckodriver_autoinstaller
-from __version__ import __version__, AppVersions
+from __version__ import __version__, AppVersions, AppVersionsFilePy
 import io, tempfile
 
 
@@ -68,13 +68,17 @@ class UpdateAppRepo:
        updates = self.check_updates(urlAppVersions)
        if updates:
             pathFileToUpdate = self.zipLoad(urlApp, updates)
-            print(pathFileToUpdate)
             for file in pathFileToUpdate:
                 pathTempFile = pathFileToUpdate[file]['pathTemp']
                 pathRelativeApp =  pathFileToUpdate[file]['pathApp']
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                parent_dir = os.path.dirname(current_dir)
-                pathApp = os.path.join(parent_dir, pathRelativeApp)
+                if pathRelativeApp in AppVersionsFilePy:
+                    pathApp = AppVersionsFilePy[pathRelativeApp]
+                    print(AppVersionsFilePy[pathRelativeApp])
+                    print("Uso de ruta relativa")
+                else:
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    parent_dir = os.path.dirname(current_dir)
+                    pathApp = os.path.join(parent_dir, pathRelativeApp) 
                 with open(pathTempFile, 'r') as file:
                     newData = file.read()
                 with open(pathApp, "wb") as file:
@@ -107,14 +111,13 @@ class UpdateAppRepo:
                     extract_path = tempfile.mkdtemp()
                     zip_ref.extractall(extract_path)
                 pathByfile = {}
-                print(extract_path)
                 for root, dirs, files in os.walk(extract_path):
                     for file in files:
                         pathByfile[file] = os.path.join(root, file)
                 
                 fileToUpdate = {}
-                for namefile, version in (AppVersions.items()):
-                    vrApp = AppVersions[namefile]
+                for namefile, version in (__version__.AppVersions.items()):
+                    vrApp = __version__.AppVersions[namefile]
                     vrRelease = updateJson['AppVersions'][namefile]
                     if vrApp != vrRelease:
                         namefileTemp = namefile.split('\\')[-1]

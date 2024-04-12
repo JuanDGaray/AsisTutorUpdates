@@ -1,3 +1,9 @@
+from componentsUI import   BottomWindow, home, jsvdrh31254, loading, loadingUpdates, loggin, topWindow
+from src import dataBaseManager, loadUpdates,selenuimManager
+from utils import constants,stylesheetUI
+import setup
+
+
 __version__ = 'v1.1.2'
 
 
@@ -53,3 +59,24 @@ AppVersions = {
     'utils\stylesheetUI.py':1.2,
     'utils\__init__.py':1.0,
   }
+
+
+AppVersionsFilePy = {
+'.gitignore':None,
+'AsisTutor_v1.0.0.py':None,
+'bot.ico':None,
+'requirements.txt':None,
+'setup.py':setup.__file__,
+'__version__.py':__file__  ,
+'componentsUI\BottomWindow.py':BottomWindow.__file__,
+'componentsUI\home.py':home.__file__,
+'componentsUI\loading.py':loading.__file__,
+'componentsUI\loadingUpdates.py':loadingUpdates.__file__,
+'componentsUI\loggin.py':loggin.__file__,
+r'componentsUI\topWindow.py':topWindow.__file__,
+'src\dataBaseManager.py':dataBaseManager.__file__,
+'src\loadUpdates.py':loadUpdates.__file__,
+'src\selenuimManager.py':selenuimManager.__file__,
+'utils\constants.py':constants.__file__,
+'utils\stylesheetUI.py':stylesheetUI.__file__,
+}

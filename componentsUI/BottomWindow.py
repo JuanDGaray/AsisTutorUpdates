@@ -546,7 +546,7 @@ class BottomWidget():
 
             ButtonExit = QtWidgets.QPushButton()
             ButtonExit.setContentsMargins(0,0,0,0)
-            icon = QtGui.QIcon("assets/images/exit-full-screen.png")
+            icon = QtGui.QIcon(imageBS64["exit"])
             ButtonExit.setIcon(icon)
             ButtonExit.setObjectName("ButtonMetrics")
             ButtonExit.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))

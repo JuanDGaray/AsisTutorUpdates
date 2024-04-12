@@ -321,7 +321,7 @@ class Loggin(QtWidgets.QWidget):
             self.bugButton.setText(_translate("MainWindow", "Report Bug"))
             self.label.setText(_translate("MainWindow", "User:"))
             self.label_4.setText(_translate("MainWindow", "Password:"))
-            self.logginPush.setText(_translate("MainWindow", "Loggin"))
+            self.logginPush.setText(_translate("MainWindow", "Entrar"))
             self.label_6.setText(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
                                                 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
                                                 "p, li { white-space: pre-wrap; }"
